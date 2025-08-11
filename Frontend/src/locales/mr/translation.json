@@ -1,0 +1,58 @@
+{
+  "signin": {
+    "title": "ट्रॅक माय बस लॉगिन",
+    "subtitle": "तुमची बस थेट, कधीही ट्रॅक करा!",
+    "phone_placeholder": "फोन नंबर",
+    "password_placeholder": "पासवर्ड",
+    "sign_in": "लॉगिन करा",
+    "create_account_prompt": "खाते नाहीये?",
+    "create_account_link": "नवीन खाते तयार करा",
+    "invalid_phone": "कृपया वैध 10-अंकी फोन नंबर प्रविष्ट करा.",
+    "short_password": "पासवर्ड किमान 6 अक्षरांचा असावा."
+  },
+  "signup": {
+    "title": "खाते तयार करा",
+    "subtitle": "बस ट्रॅकिंग नेटवर्कमध्ये सामील व्हा!",
+    "name_placeholder": "पूर्ण नाव",
+    "phone_placeholder": "फोन नंबर",
+    "password_placeholder": "पासवर्ड",
+    "confirm_password_placeholder": "पासवर्डची पुष्टी करा",
+    "sign_up": "नोंदणी करा",
+    "already_have_account": "आधीच खाते आहे?",
+    "login": "लॉगिन",
+    "password_mismatch": "पासवर्ड जुळत नाहीत."
+  },
+  "home": {
+    "title": "ट्रॅक माय बस",
+    "subheading": "सोलापूर महानगरपालिका",
+    "profile": "वापरकर्ता प्रोफाइल",
+    "heading": "बस शोधा 🗺️",
+    "source": "स्रोत",
+    "destination": "गंतव्य",
+    "select_source": "-- प्रवासाची सुरवात --",
+    "select_destination": "-- प्रवासाचे ठिकाण --",
+    "button": "बस शोधा",
+    "live_map": "थेट नकाशा",
+    "route_info": "मार्गाची माहिती",
+    "footer": "© २०२५ सोलापूर महानगरपालिका",
+    "alert": "कृपया भिन्न स्रोत आणि गंतव्य निवडा.",
+    "result": "🚌 {{source}} ते {{destination}} दरम्यान बस दर्शवित आहे...",
+    "no_buses": "या मार्गासाठी कोणतीही बस उपलब्ध नाही.",
+    "available_buses": "उपलब्ध बस",
+    "stops": {
+      "station": "सोलापूर स्टेशन",
+      "temple": "सिद्धेश्वर मंदिर",
+      "midc": "MIDC",
+      "hotgi": "होटगी",
+      "akkalkot": "अक्कलकोट रोड",
+      "university": "सोलापूर विद्यापीठ",
+      "vijapur": "विजापूर रोड"
+    }
+  },
+  "profile": {
+    "back": "मुख्यपृष्ठावर परत जा",
+    "registered_user": "नोंदणीकृत वापरकर्ता",
+    "edit": "प्रोफाइल संपादित करा",
+    "logout": "बाहेर पडा"
+  }
+}

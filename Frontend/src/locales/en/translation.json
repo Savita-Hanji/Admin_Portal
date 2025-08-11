@@ -1,0 +1,58 @@
+{
+  "signin": {
+    "title": "Track My Bus Login",
+    "subtitle": "Track Your ride live, anytime!",
+    "phone_placeholder": "Phone Number",
+    "password_placeholder": "Password",
+    "sign_in": "Sign In",
+    "create_account_prompt": "Don't have an account?",
+    "create_account_link": "Create One",
+    "invalid_phone": "Please enter a valid 10-digit phone number.",
+    "short_password": "Password must be at least 6 characters."
+  },
+  "signup": {
+    "title": "Create Account",
+    "subtitle": "Join the Bus Tracking Network!",
+    "name_placeholder": "Full Name",
+    "phone_placeholder": "Phone Number",
+    "password_placeholder": "Password",
+    "confirm_password_placeholder": "Confirm Password",
+    "sign_up": "Sign Up",
+    "already_have_account": "Already have an account?",
+    "login": "Login",
+    "password_mismatch": "Passwords do not match."
+  },
+  "home": {
+    "title": "Track My Bus",
+    "subheading": "Solapur Municipal Corporation",
+    "profile": "User Profile",
+    "heading": "Find a Bus 🗺️",
+    "source": "Source",
+    "destination": "Destination",
+    "select_source": "-- Select Source --",
+    "select_destination": "-- Select Destination --",
+    "button": "Find Buses",
+    "live_map": "Live Map",
+    "route_info": "Route Info",
+    "footer": "© 2025 Solapur Municipal Corporation",
+    "alert": "Please choose different Source and Destination stops.",
+    "result": "🚌 Showing buses from {{source}} to {{destination}}...",
+    "no_buses": "No buses available for this route.",
+    "available_buses": "Available Buses",
+    "stops": {
+      "station": "Solapur Station",
+      "temple": "Siddheshwar Temple",
+      "midc": "MIDC",
+      "hotgi": "Hotgi",
+      "akkalkot": "Akkalkot Road",
+      "university": "Solapur University",
+      "vijapur": "Vijapur Road"
+    }
+  },
+  "profile": {
+    "back": "Back to Home",
+    "registered_user": "Registered User",
+    "edit": "Edit Profile",
+    "logout": "Logout"
+  }
+}
