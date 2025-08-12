@@ -16,7 +16,6 @@ import Select from "react-select";
 import axiosInstance from "../../utils/axiosInstance.js";
 import busSevaLogo from "../../assets/images/bus-seva-logo.png";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../slices/authSlice.js";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -25,9 +24,10 @@ const Home = () => {
 
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
+  const [routes, setRoutes] = useState([]); // Store all routes
   const [sourceOptions, setSourceOptions] = useState([]);
   const [destinationOptions, setDestinationOptions] = useState([]);
-  const [matchedBuses, setMatchedBuses] = useState(null); // ✅ Initially null
+  const [matchedBuses, setMatchedBuses] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [loadingStops, setLoadingStops] = useState(true);
   const [loadingBuses, setLoadingBuses] = useState(false);
@@ -39,28 +39,20 @@ const Home = () => {
     day: "numeric",
   });
 
+  // Fetch all routes
   useEffect(() => {
     const fetchStops = async () => {
       try {
         setLoadingStops(true);
         const res = await axiosInstance.get(`/routes`);
 
-        const sources = [...new Set(res.data.map((item) => item.source))];
-        const destinations = [
-          ...new Set(res.data.map((item) => item.destination)),
-        ];
+        setRoutes(res.data); // store full list
 
+        const sources = [...new Set(res.data.map((item) => item.source))];
         setSourceOptions(
           sources.map((source) => ({
             value: source,
             label: source,
-          }))
-        );
-
-        setDestinationOptions(
-          destinations.map((destination) => ({
-            value: destination,
-            label: destination,
           }))
         );
       } catch (err) {
@@ -74,27 +66,53 @@ const Home = () => {
     fetchStops();
   }, []);
 
+  // Filter destination list when source changes
+  useEffect(() => {
+    if (source) {
+      const filteredDestinations = routes
+        .filter((r) => r.source === source)
+        .map((r) => r.destination);
+
+      const uniqueDestinations = [...new Set(filteredDestinations)];
+
+      setDestinationOptions(
+        uniqueDestinations.map((d) => ({
+          value: d,
+          label: d,
+        }))
+      );
+      setDestination("");
+    } else {
+      setDestinationOptions([]);
+    }
+  }, [source, routes]);
+
+  // Find bus for specific route
   const handleFindBus = async () => {
     if (!source || !destination || source === destination) {
       toast.warning("Please select different source and destination");
       return;
     }
 
-    setMatchedBuses([]); // ✅ Reset before new search
+    setMatchedBuses([]);
 
     try {
       setLoadingBuses(true);
-      const res = await axiosInstance.get(`/bus-routes-mapping`, {
-        params: { source, destination },
-      });
+      const res = await axiosInstance.get(`/bus-routes-mapping`);
 
-      if (res.data.length === 0) {
+      const filteredBuses = res.data.filter(
+        (bus) =>
+          bus?.route?.source === source &&
+          bus?.route?.destination === destination
+      );
+
+      if (filteredBuses.length === 0) {
         toast.info("No buses found for this route");
         setMatchedBuses([]);
         return;
       }
 
-      const sortedBuses = res.data.sort((a, b) => {
+      const sortedBuses = filteredBuses.sort((a, b) => {
         const timeA = a.timings?.[0] || "00:00";
         const timeB = b.timings?.[0] || "00:00";
         const [hA, mA] = timeA.split(":").map(Number);
@@ -103,6 +121,7 @@ const Home = () => {
       });
 
       setMatchedBuses(sortedBuses);
+      console.log(sortedBuses, "Sorted Buses");
     } catch (err) {
       console.error("Error fetching buses:", err);
       toast.error("Error fetching buses. Please try again.");
@@ -232,7 +251,7 @@ const Home = () => {
                 placeholder="Select destination"
                 className="text-sm"
                 isLoading={loadingStops}
-                isDisabled={loadingStops}
+                isDisabled={loadingStops || !source}
                 styles={customSelectStyles}
               />
             </div>
@@ -253,7 +272,7 @@ const Home = () => {
           </button>
         </div>
 
-        {/* Results Section - Only show after search */}
+        {/* Results Section */}
         {matchedBuses !== null &&
           (loadingBuses ? (
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center justify-center space-y-3">
@@ -304,13 +323,7 @@ const Home = () => {
                         <span className="text-gray-400 font-medium mt-0.5">
                           Via:
                         </span>
-                        <span>
-                          {bus?.route?.trips?.[0].stops
-                            ?.slice(0, 4)
-                            .map((stop) => stop.name)
-                            .join(" → ")}
-                          {bus?.route?.trips?.[0].stops?.length > 4 && "..."}
-                        </span>
+                        <span>{bus?.route?.via || "—"}</span>
                       </div>
                     </div>
                   </div>
@@ -332,7 +345,7 @@ const Home = () => {
                 onClick={() => {
                   setSource("");
                   setDestination("");
-                  setMatchedBuses(null); // reset
+                  setMatchedBuses(null);
                 }}
                 className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
               >

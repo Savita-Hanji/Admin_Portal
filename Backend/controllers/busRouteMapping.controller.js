@@ -108,13 +108,10 @@
 //   }
 // };
 
-
-
-
-
 import BusRoute from "../models/busRouteMapping.model.js";
 import Route from "../models/route.model.js";
 import Bus from "../models/bus.model.js";
+import mongoose from "mongoose";
 
 // Create a new bus-route mapping
 export const createBusRoute = async (req, res) => {
@@ -170,15 +167,20 @@ export const getAllBusRoutes = async (req, res) => {
 export const getBusRouteById = async (req, res) => {
   try {
     const { id } = req.params;
-    const mapping = await BusRoute.findById(id)
+    const busRouteId = new mongoose.Types.ObjectId(id);
+    const mapping = await BusRoute.findOne({ _id: busRouteId })
       .populate("bus")
       .populate("route");
+
+    // console.log(mapping, "asdfg");
 
     if (!mapping) {
       return res.status(404).json({ message: "Mapping not found" });
     }
 
-    res.status(200).json(mapping);
+    res
+      .status(200)
+      .json({ message: "Bus Route Data Sent Successfully", data: mapping });
   } catch (error) {
     console.error("Error fetching mapping by ID:", error);
     res.status(500).json({ message: "Internal server error" });

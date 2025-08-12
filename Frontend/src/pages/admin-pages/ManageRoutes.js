@@ -54,7 +54,7 @@ const ManageRoutes = () => {
       setRoutes(res.data);
 
       // Fetch unique sources and destinations for suggestions
-      const stopsRes = await axiosInstance.get("/routes/unique-stops");
+      const stopsRes = await axiosInstance.get("/routes");
       setUniqueSources(stopsRes.data.sources);
       setUniqueDestinations(stopsRes.data.destinations);
     } catch (err) {

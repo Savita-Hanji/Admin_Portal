@@ -4,86 +4,152 @@ import {
   FaBus,
   FaClock,
   FaRoad,
-  FaChevronRight,
-  FaUsers,
+  FaSpinner,
+  FaExclamationTriangle,
+  FaWifi,
+  FaCircle,
 } from "react-icons/fa";
 import { MdDirectionsBus, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
+import axiosInstance from "../../utils/axiosInstance.js";
+import { useParams } from "react-router-dom";
 
 const BusRouteStops = () => {
-  const [routeData, setRouteData] = useState({
-    busName: "101A - City Express",
-    routeNumber: "Route #SCT-101A",
-    source: "Solapur Station",
-    destination: "Akkalkot Road Terminal",
-    stops: [],
-    lastUpdated: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  });
+  const { busID } = useParams();
+  const [busRouteData, setBusRouteData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedStop, setExpandedStop] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [selectedTripIndex, setSelectedTripIndex] = useState(0);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
-  // Demo data - replace with your API call
-  useEffect(() => {
-    const demoStops = [
-      {
-        id: 1,
-        name: "Solapur Station",
-        time: "08:00 AM",
-        distance: "0 km",
-        status: "on-time",
-        eta: "Departing now",
-        passengers: "High",
-        platform: "Platform 1",
-      },
-      {
-        id: 2,
-        name: "Gandhi Chowk",
-        time: "08:15 AM",
-        distance: "2.5 km",
-        status: "on-time",
-        eta: "3 min",
-        passengers: "Medium",
-        platform: "Stop 2",
-      },
-      {
-        id: 3,
-        name: "City Mall",
-        time: "08:25 AM",
-        distance: "4.2 km",
-        status: "delayed",
-        eta: "7 min",
-        passengers: "Low",
-        platform: "Stop 3",
-      },
-      {
-        id: 4,
-        name: "Medical College",
-        time: "08:40 AM",
-        distance: "6.8 km",
-        status: "on-time",
-        eta: "15 min",
-        passengers: "High",
-        platform: "Stop 4",
-      },
-      {
-        id: 5,
-        name: "Akkalkot Road Terminal",
-        time: "09:00 AM",
-        distance: "10 km",
-        status: "on-time",
-        eta: "25 min",
-        passengers: "Medium",
-        platform: "Terminal 1",
-      },
-    ];
-    setRouteData((prev) => ({ ...prev, stops: demoStops }));
-  }, []);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get(`/bus-routes-mapping/${busID}`);
+      setBusRouteData(res.data.data);
+      setLastUpdated(new Date());
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to load route data. Trying again..."
+      );
+      if (autoRefresh) {
+        setTimeout(fetchData, 5000);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleStopExpand = (stopId) => {
     setExpandedStop(expandedStop === stopId ? null : stopId);
   };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+    if (timeString.includes("AM") || timeString.includes("PM")) {
+      return timeString;
+    }
+    const [hours, minutes] = timeString.split(":");
+    const hourNum = parseInt(hours, 10);
+    const period = hourNum >= 12 ? "PM" : "AM";
+    const displayHour = hourNum % 12 || 12;
+    return `${displayHour}:${minutes} ${period}`;
+  };
+
+  const calculateStopTime = (trip, timingOffset) => {
+    const [hours, minutes] = trip.sourceTime.split(":");
+    const sourceDate = new Date();
+    sourceDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    const [offsetHours, offsetMinutes] = timingOffset.split(":");
+    sourceDate.setHours(sourceDate.getHours() + parseInt(offsetHours, 10));
+    sourceDate.setMinutes(
+      sourceDate.getMinutes() + parseInt(offsetMinutes, 10)
+    );
+
+    return formatTime(`${sourceDate.getHours()}:${sourceDate.getMinutes()}`);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Active":
+        return "bg-green-500";
+      case "Inactive":
+        return "bg-red-500";
+      case "Maintenance":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const calculateDistanceFromSource = (index, totalStops) => {
+    const totalDistance = busRouteData.route.distance;
+    // Distribute distance proportionally with more weight given to later stops
+    const baseDistance = (totalDistance * (index + 1)) / (totalStops + 1);
+    // Add some random variation to make it more realistic
+    const variation = (Math.random() * 0.2 * totalDistance) / totalStops;
+    return Math.round(baseDistance + variation);
+  };
+
+  useEffect(() => {
+    fetchData();
+    let intervalId;
+    if (autoRefresh) {
+      intervalId = setInterval(fetchData, 30000);
+    }
+    return () => clearInterval(intervalId);
+  }, [busID, autoRefresh]);
+
+  if (loading && !busRouteData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+          <p className="text-gray-600">Loading route information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !busRouteData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md p-6 bg-white rounded-xl shadow-sm">
+          <FaExclamationTriangle className="text-4xl text-red-500 mb-4 mx-auto" />
+          <h2 className="text-xl font-semibold mb-2">Connection Issue</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={fetchData}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Retry Now
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!busRouteData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md p-6 bg-white rounded-xl shadow-sm">
+          <FaExclamationTriangle className="text-4xl text-yellow-500 mb-4 mx-auto" />
+          <h2 className="text-xl font-semibold mb-2">No Route Data</h2>
+          <p className="text-gray-600 mb-4">
+            This route doesn't have any data available.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedTrip = busRouteData.route.trips[selectedTripIndex];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
@@ -92,39 +158,125 @@ const BusRouteStops = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl shadow-lg p-6 mb-6 text-white"
+        className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl shadow-lg p-6 mb-6 text-white relative"
       >
+        <div className="absolute top-4 right-4 flex items-center space-x-3">
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`text-xs font-medium px-2 py-1 rounded-full flex items-center ${
+              autoRefresh ? "bg-white/20" : "bg-red-500/80"
+            }`}
+          >
+            {autoRefresh ? (
+              <>
+                <FaCircle className="text-green-400 mr-1 text-[8px]" />
+                AUTO
+              </>
+            ) : (
+              <>
+                <FaCircle className="text-red-300 mr-1 text-[8px]" />
+                MANUAL
+              </>
+            )}
+          </button>
+          <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full flex items-center">
+            <FaWifi className="mr-1 text-blue-200" />
+            LIVE
+          </span>
+        </div>
+
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center mb-1">
               <MdDirectionsBus className="text-2xl mr-3" />
-              <h1 className="text-2xl font-bold">{routeData.busName}</h1>
+              <h1 className="text-2xl font-bold">
+                {busRouteData.bus.busNumber} - {busRouteData.route.source} to{" "}
+                {busRouteData.route.destination}
+              </h1>
             </div>
-            <p className="text-blue-100 text-sm">{routeData.routeNumber}</p>
+            <p className="text-blue-100 text-sm">
+              Via: {busRouteData.route.via}
+            </p>
+            {busRouteData.remarks && (
+              <p className="text-blue-100 text-sm mt-1">
+                Remarks: {busRouteData.remarks}
+              </p>
+            )}
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-            Live Tracking
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-blue-400/30">
-          <div className="text-center">
-            <div className="text-blue-200 text-sm mb-1">From</div>
-            <div className="font-semibold">{routeData.source}</div>
-          </div>
-          <div className="mx-4">
-            <FaChevronRight className="text-xl text-blue-300" />
-          </div>
-          <div className="text-center">
-            <div className="text-blue-200 text-sm mb-1">To</div>
-            <div className="font-semibold">{routeData.destination}</div>
+          <div
+            className={`${getStatusColor(
+              busRouteData.status
+            )} text-white rounded-full px-3 py-1 text-xs font-medium`}
+          >
+            {busRouteData.status}
           </div>
         </div>
 
-        <div className="mt-4 text-sm text-blue-100 flex justify-end items-center">
-          <span>Updated: {routeData.lastUpdated}</span>
+        {/* Trip Selection */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {busRouteData.route.trips.map((trip, index) => (
+            <button
+              key={trip._id}
+              onClick={() => setSelectedTripIndex(index)}
+              className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                selectedTripIndex === index
+                  ? "bg-white text-blue-800 font-medium"
+                  : "bg-white/20 hover:bg-white/30"
+              }`}
+            >
+              {formatTime(trip.sourceTime)} - {formatTime(trip.destinationTime)}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4 text-sm text-blue-100 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+          <div className="flex items-center">
+            <FaRoad className="mr-2" />
+            <span>
+              Distance: {busRouteData.route.distance} km • Duration:{" "}
+              {Math.floor(busRouteData.route.estimatedDuration / 60)}h{" "}
+              {busRouteData.route.estimatedDuration % 60}m
+            </span>
+          </div>
+          <div className="flex items-center">
+            <span>
+              Updated:{" "}
+              {lastUpdated?.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            {loading && <FaSpinner className="animate-spin ml-2 text-xs" />}
+          </div>
         </div>
       </motion.div>
+
+      {/* Bus Details */}
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="bg-blue-100 p-2 rounded-lg mr-3">
+            <FaBus className="text-blue-600" />
+          </span>
+          Bus Details
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-700 mb-2">
+              Registration Number
+            </h3>
+            <p className="text-gray-900 font-mono">
+              {busRouteData.bus.registrationNumber}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-700 mb-2">Bus Type</h3>
+            <p className="text-gray-900 capitalize">
+              {busRouteData.bus.type.toLowerCase()}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Route Timeline */}
       <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
@@ -132,84 +284,100 @@ const BusRouteStops = () => {
           <span className="bg-blue-100 p-2 rounded-lg mr-3">
             <FaRoad className="text-blue-600" />
           </span>
-          Route Timeline
+          Trip Timeline - {formatTime(selectedTrip.sourceTime)} to{" "}
+          {formatTime(selectedTrip.destinationTime)}
         </h2>
 
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-[21px] top-0 h-full w-0.5 bg-gray-200"></div>
 
-          {routeData.stops.map((stop, index) => (
-            <div key={stop.id} className="relative pl-10 pb-4 last:pb-0">
-              {/* Timeline dot */}
+          {/* Source */}
+          <div className="relative pl-10 pb-4">
+            <div className="absolute left-2 top-4 w-7 h-7 rounded-full bg-green-500 flex items-center justify-center z-10 shadow-md">
+              <FaMapMarkerAlt className="text-white text-[8px]" />
+            </div>
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-green-400 mr-3"></div>
+                  <h3 className="font-medium text-gray-900">
+                    {busRouteData.route.source}
+                  </h3>
+                </div>
+                <div className="flex items-center text-sm text-gray-600 space-x-4">
+                  <div className="flex items-center">
+                    <FaClock className="mr-1 text-gray-400" />
+                    <span>{formatTime(selectedTrip.sourceTime)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FaRoad className="mr-1 text-gray-400" />
+                    <span>0 km</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stops */}
+          {selectedTrip.stops.map((stop, index) => (
+            <div key={`${stop._id}-${index}`} className="relative pl-10 pb-4">
               <motion.div
                 animate={{
-                  scale: expandedStop === stop.id ? [1, 1.2, 1] : 1,
+                  scale: expandedStop === stop._id ? [1, 1.2, 1] : 1,
                   boxShadow:
-                    expandedStop === stop.id
+                    expandedStop === stop._id
                       ? "0 0 0 4px rgba(59, 130, 246, 0.2)"
                       : "none",
                 }}
                 transition={{ duration: 0.3 }}
-                className={`absolute left-2 top-4 w-7 h-7 rounded-full flex items-center justify-center z-10
-                  ${
-                    index === 0
-                      ? "bg-green-500"
-                      : index === routeData.stops.length - 1
-                      ? "bg-red-500"
-                      : "bg-blue-500"
-                  }`}
+                className="absolute left-2 top-4 w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center z-10 shadow-md"
               >
-                {index === 0 ? (
-                  <FaMapMarkerAlt className="text-white text-[8px]" />
-                ) : index === routeData.stops.length - 1 ? (
-                  <FaMapMarkerAlt className="text-white text-[8px]" />
-                ) : (
-                  <FaBus className="text-white text-[8px]" />
-                )}
+                <FaBus className="text-white text-[8px]" />
               </motion.div>
 
-              {/* Stop card */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className={`bg-white border border-gray-200 rounded-xl p-4 transition-all duration-200 cursor-pointer
-                  ${
-                    expandedStop === stop.id
-                      ? "ring-2 ring-blue-200 shadow-md"
-                      : "shadow-sm hover:shadow-md"
-                  }`}
-                onClick={() => toggleStopExpand(stop.id)}
+                className={`bg-white border border-gray-200 rounded-xl p-4 transition-all duration-200 cursor-pointer ${
+                  expandedStop === stop._id
+                    ? "ring-2 ring-blue-200 shadow-md"
+                    : "shadow-sm hover:shadow-md"
+                }`}
+                onClick={() => toggleStopExpand(stop._id)}
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <div
-                      className={`w-2 h-2 rounded-full mr-3 ${
-                        stop.status === "on-time"
-                          ? "bg-green-400"
-                          : "bg-yellow-400"
-                      }`}
-                    ></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-400 mr-3"></div>
                     <h3 className="font-medium text-gray-900">{stop.name}</h3>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <div className="flex items-center mr-4">
+                  <div className="flex items-center text-sm text-gray-600 space-x-4">
+                    <div className="flex items-center">
                       <FaClock className="mr-1 text-gray-400" />
-                      <span>{stop.time}</span>
+                      <span>
+                        {calculateStopTime(selectedTrip, stop.timingOffset)}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <FaRoad className="mr-1 text-gray-400" />
-                      <span>{stop.distance}</span>
+                      <span>
+                        ~
+                        {calculateDistanceFromSource(
+                          index,
+                          selectedTrip.stops.length
+                        )}{" "}
+                        km
+                      </span>
                     </div>
-                    {expandedStop === stop.id ? (
-                      <MdExpandLess className="ml-3 text-gray-500" />
+                    {expandedStop === stop._id ? (
+                      <MdExpandLess className="text-gray-500" />
                     ) : (
-                      <MdExpandMore className="ml-3 text-gray-500" />
+                      <MdExpandMore className="text-gray-500" />
                     )}
                   </div>
                 </div>
 
                 <AnimatePresence>
-                  {expandedStop === stop.id && (
+                  {expandedStop === stop._id && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
@@ -218,35 +386,14 @@ const BusRouteStops = () => {
                       className="overflow-hidden"
                     >
                       <div className="mt-3 pt-3 border-t border-gray-200 text-sm">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <div className="text-gray-500 mb-1 flex items-center">
-                              <FaClock className="mr-2" />
-                              ETA
-                            </div>
-                            <div className="font-medium">{stop.eta}</div>
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-gray-500 mb-1 flex items-center">
+                            <FaClock className="mr-2" />
+                            Estimated Arrival
                           </div>
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <div className="text-gray-500 mb-1 flex items-center">
-                              <FaUsers className="mr-2" />
-                              Passenger Load
-                            </div>
-                            <div
-                              className={`font-medium ${
-                                stop.passengers === "High"
-                                  ? "text-red-500"
-                                  : stop.passengers === "Medium"
-                                  ? "text-yellow-500"
-                                  : "text-green-500"
-                              }`}
-                            >
-                              {stop.passengers}
-                            </div>
+                          <div className="font-medium">
+                            {calculateStopTime(selectedTrip, stop.timingOffset)}
                           </div>
-                        </div>
-                        <div className="mt-3 bg-gray-50 p-3 rounded-lg">
-                          <div className="text-gray-500 mb-1">Platform</div>
-                          <div className="font-medium">{stop.platform}</div>
                         </div>
                       </div>
                     </motion.div>
@@ -255,6 +402,33 @@ const BusRouteStops = () => {
               </motion.div>
             </div>
           ))}
+
+          {/* Destination */}
+          <div className="relative pl-10">
+            <div className="absolute left-2 top-4 w-7 h-7 rounded-full bg-red-500 flex items-center justify-center z-10 shadow-md">
+              <FaMapMarkerAlt className="text-white text-[8px]" />
+            </div>
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-red-400 mr-3"></div>
+                  <h3 className="font-medium text-gray-900">
+                    {busRouteData.route.destination}
+                  </h3>
+                </div>
+                <div className="flex items-center text-sm text-gray-600 space-x-4">
+                  <div className="flex items-center">
+                    <FaClock className="mr-1 text-gray-400" />
+                    <span>{formatTime(selectedTrip.destinationTime)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FaRoad className="mr-1 text-gray-400" />
+                    <span>{busRouteData.route.distance} km</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -265,7 +439,9 @@ const BusRouteStops = () => {
         transition={{ delay: 0.3 }}
         className="text-xs text-gray-400 text-center mt-6"
       >
-        Tap on any stop for detailed information
+        Tap on any stop for detailed information •{" "}
+        {autoRefresh ? "Auto-refreshing every 30 seconds" : "Manual refresh"} •
+        Last updated: {new Date(busRouteData.updatedAt).toLocaleString()}
       </motion.div>
     </div>
   );
