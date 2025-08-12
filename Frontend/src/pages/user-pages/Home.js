@@ -169,7 +169,7 @@ const Home = () => {
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-indigo-600  to-indigo-400 bg-clip-text text-transparent">
                   Track My Bus
                 </span>
               </h1>
@@ -187,7 +187,7 @@ const Home = () => {
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
               aria-label="User profile"
             >
-              <FaUserCircle className="text-blue-600 text-xl" />
+              <FaUserCircle className="text-indigo-600 text-xl" />
               <span className="hidden md:inline text-sm font-medium text-gray-700">
                 Profile
               </span>
@@ -222,7 +222,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                <FaMapMarkerAlt className="text-blue-500" />
+                <FaMapMarkerAlt className="text-indigo-500" />
                 Source
               </label>
               <Select
@@ -260,7 +260,7 @@ const Home = () => {
           <button
             onClick={handleFindBus}
             disabled={loadingBuses || loadingStops}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            className="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
           >
             {loadingBuses ? (
               <FaSpinner className="animate-spin" />

@@ -239,7 +239,7 @@ const Profile = () => {
         <div className="px-6 pt-6 pb-2">
           <button
             onClick={() => navigate("/home")}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors group"
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors group"
           >
             <FaArrowLeft className="transition-transform group-hover:-translate-x-1" />
             <span className="text-sm font-medium">Back to Home</span>
@@ -250,8 +250,8 @@ const Profile = () => {
         <div className="p-6 pt-0">
           {/* Profile Picture and Name */}
           <div className="text-center mb-6 relative">
-            <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full mb-4 shadow-inner">
-              <FaUserCircle className="text-4xl md:text-5xl text-blue-500" />
+            <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-full mb-4 shadow-inner">
+              <FaUserCircle className="text-4xl md:text-5xl text-indigo-500" />
             </div>
 
             {isEditing ? (
@@ -260,7 +260,7 @@ const Profile = () => {
                   type="text"
                   value={editedName}
                   onChange={(e) => setEditedName(e.target.value)}
-                  className="text-xl md:text-2xl font-semibold text-gray-800 border-b border-blue-500 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 rounded"
+                  className="text-xl md:text-2xl font-semibold text-gray-800 border-b border-indigo-500 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-200 rounded"
                   autoFocus
                 />
                 <div className="flex gap-1">
@@ -307,7 +307,7 @@ const Profile = () => {
             {/* Phone Number Card */}
             <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
               <div className="p-2 bg-blue-100 rounded-full flex-shrink-0">
-                <FaPhoneAlt className="text-blue-600 text-sm md:text-base" />
+                <FaPhoneAlt className="text-indigo-600 text-sm md:text-base" />
               </div>
               <div className="flex-grow">
                 <p className="text-xs text-gray-500">Phone Number</p>
@@ -320,7 +320,7 @@ const Profile = () => {
             {/* Email Card */}
             <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
               <div className="p-2 bg-blue-100 rounded-full flex-shrink-0">
-                <FaEnvelope className="text-blue-600 text-sm md:text-base" />
+                <FaEnvelope className="text-indigo-600 text-sm md:text-base" />
               </div>
               <div className="flex-grow">
                 <p className="text-xs text-gray-500">Email Address</p>
@@ -335,7 +335,7 @@ const Profile = () => {
           <div className="flex justify-center">
             <button
               onClick={handleLogout}
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
+              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
             >
               <FaSignOutAlt className="text-sm" /> Logout
             </button>
