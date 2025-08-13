@@ -30,7 +30,7 @@ const LanguageScreen = () => {
             <FaBus className="text-4xl text-blue-600" />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Solapur City Bus
+            Track My Bus
           </h1>
           <p className="text-gray-600 text-sm mt-1">
             Powered by Solapur Municipal Corporation

@@ -260,7 +260,7 @@ const Home = () => {
           <button
             onClick={handleFindBus}
             disabled={loadingBuses || loadingStops}
-            className="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            className="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-400 hover:from-indigo-700 hover:to-indigo-500 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
           >
             {loadingBuses ? (
               <FaSpinner className="animate-spin" />
@@ -284,7 +284,7 @@ const Home = () => {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                   <span className="bg-blue-100 p-2 rounded-lg">
-                    <FaBusAlt className="text-blue-600" />
+                    <FaBusAlt className="text-indigo-600" />
                   </span>
                   Available Buses
                 </h3>
@@ -303,7 +303,7 @@ const Home = () => {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">
+                        <div className="bg-blue-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-sm">
                           {bus?.bus?.busNumber || "N/A"}
                         </div>
                         <div className="text-sm font-medium text-gray-500">

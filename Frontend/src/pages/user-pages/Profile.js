@@ -335,7 +335,7 @@ const Profile = () => {
           <div className="flex justify-center">
             <button
               onClick={handleLogout}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
+              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-indigo-400 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
             >
               <FaSignOutAlt className="text-sm" /> Logout
             </button>

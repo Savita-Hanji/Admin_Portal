@@ -110,7 +110,7 @@ const BusRouteStops = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+          <FaSpinner className="animate-spin text-4xl text-indigo-600 mb-4" />
           <p className="text-gray-600">Loading route information...</p>
         </div>
       </div>
@@ -126,7 +126,7 @@ const BusRouteStops = () => {
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={fetchData}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
           >
             Retry Now
           </button>
@@ -158,7 +158,7 @@ const BusRouteStops = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-2xl shadow-lg p-6 mb-6 text-white relative"
+        className="bg-gradient-to-r from-indigo-500 to-indigo-800 rounded-2xl shadow-lg p-6 mb-6 text-white relative"
       >
         <div className="absolute top-4 right-4 flex items-center space-x-3">
           <button
@@ -180,7 +180,7 @@ const BusRouteStops = () => {
             )}
           </button>
           <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full flex items-center">
-            <FaWifi className="mr-1 text-blue-200" />
+            <FaWifi className="mr-1 text-indigo-200" />
             LIVE
           </span>
         </div>
@@ -194,11 +194,11 @@ const BusRouteStops = () => {
                 {busRouteData.route.destination}
               </h1>
             </div>
-            <p className="text-blue-100 text-sm">
+            <p className="text-indigo-100 text-sm">
               Via: {busRouteData.route.via}
             </p>
             {busRouteData.remarks && (
-              <p className="text-blue-100 text-sm mt-1">
+              <p className="text-indigo-100 text-sm mt-1">
                 Remarks: {busRouteData.remarks}
               </p>
             )}
@@ -220,7 +220,7 @@ const BusRouteStops = () => {
               onClick={() => setSelectedTripIndex(index)}
               className={`px-3 py-1 rounded-full text-sm transition-colors ${
                 selectedTripIndex === index
-                  ? "bg-white text-blue-800 font-medium"
+                  ? "bg-white text-indigo-800 font-medium"
                   : "bg-white/20 hover:bg-white/30"
               }`}
             >
@@ -229,7 +229,7 @@ const BusRouteStops = () => {
           ))}
         </div>
 
-        <div className="mt-4 text-sm text-blue-100 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+        <div className="mt-4 text-sm text-indigo-100 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
           <div className="flex items-center">
             <FaRoad className="mr-2" />
             <span>
@@ -254,8 +254,8 @@ const BusRouteStops = () => {
       {/* Bus Details */}
       <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 mb-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-          <span className="bg-blue-100 p-2 rounded-lg mr-3">
-            <FaBus className="text-blue-600" />
+          <span className="bg-indigo-100 p-2 rounded-lg mr-3">
+            <FaBus className="text-indigo-600" />
           </span>
           Bus Details
         </h2>
@@ -281,8 +281,8 @@ const BusRouteStops = () => {
       {/* Route Timeline */}
       <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
         <h2 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
-          <span className="bg-blue-100 p-2 rounded-lg mr-3">
-            <FaRoad className="text-blue-600" />
+          <span className="bg-indigo-100 p-2 rounded-lg mr-3">
+            <FaRoad className="text-indigo-600" />
           </span>
           Trip Timeline - {formatTime(selectedTrip.sourceTime)} to{" "}
           {formatTime(selectedTrip.destinationTime)}
@@ -331,7 +331,7 @@ const BusRouteStops = () => {
                       : "none",
                 }}
                 transition={{ duration: 0.3 }}
-                className="absolute left-2 top-4 w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center z-10 shadow-md"
+                className="absolute left-2 top-4 w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center z-10 shadow-md"
               >
                 <FaBus className="text-white text-[8px]" />
               </motion.div>
@@ -340,14 +340,14 @@ const BusRouteStops = () => {
                 whileHover={{ y: -2 }}
                 className={`bg-white border border-gray-200 rounded-xl p-4 transition-all duration-200 cursor-pointer ${
                   expandedStop === stop._id
-                    ? "ring-2 ring-blue-200 shadow-md"
+                    ? "ring-2 ring-indigo-200 shadow-md"
                     : "shadow-sm hover:shadow-md"
                 }`}
                 onClick={() => toggleStopExpand(stop._id)}
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-blue-400 mr-3"></div>
+                    <div className="w-2 h-2 rounded-full bg-indigo-400 mr-3"></div>
                     <h3 className="font-medium text-gray-900">{stop.name}</h3>
                   </div>
                   <div className="flex items-center text-sm text-gray-600 space-x-4">

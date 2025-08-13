@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FiLogOut,
@@ -9,10 +9,8 @@ import {
   FiCpu,
   FiChevronDown,
   FiChevronUp,
-  FiSettings,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
-
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../slices/authSlice";
 
@@ -20,13 +18,13 @@ const navItems = [
   {
     path: "/admin/dashboard",
     label: "Dashboard",
-    icon: <FiHome />,
+    icon: <FiHome className="text-lg" />,
     exact: true,
   },
   {
     path: "/admin/buses",
     label: "Buses",
-    icon: <FiTruck />,
+    icon: <FiTruck className="text-lg" />,
     submenu: [
       { path: "/admin/buses", label: "Manage Buses" },
       { path: "/admin/bus-pos-mapping", label: "POS Mapping" },
@@ -36,7 +34,7 @@ const navItems = [
   {
     path: "/admin/routes",
     label: "Routes",
-    icon: <FiMap />,
+    icon: <FiMap className="text-lg" />,
     submenu: [
       { path: "/admin/routes", label: "Manage Routes" },
       { path: "/admin/live-tracking", label: "Live Tracking" },
@@ -45,19 +43,13 @@ const navItems = [
   {
     path: "/admin/pos-machines",
     label: "POS Machines",
-    icon: <FiCpu />,
+    icon: <FiCpu className="text-lg" />,
     exact: true,
   },
   {
     path: "/admin/all-users",
     label: "Users",
-    icon: <FiUsers />,
-    exact: true,
-  },
-  {
-    path: "/admin/settings",
-    label: "Settings",
-    icon: <FiSettings />,
+    icon: <FiUsers className="text-lg" />,
     exact: true,
   },
 ];
@@ -68,20 +60,7 @@ const AdminLayout = ({ children }) => {
   const dispatch = useDispatch();
 
   const { user, loading } = useSelector((state) => state.auth);
-
   const [expandedMenus, setExpandedMenus] = React.useState({});
-
-  // Redirect non-admins or unauthenticated users
-  // useEffect(() => {
-  //   if (!loading) {
-  //     if (!user) {
-  //       navigate("/admin/login", { replace: true });
-  //     } else if (user.role.toLowerCase() !== "admin") {
-  //       toast.error("Access denied. Admins only.");
-  //       navigate("/login", { replace: true }); // redirect regular users to user login or home
-  //     }
-  //   }
-  // }, [user, loading, navigate]);
 
   const toggleMenu = (label) => {
     setExpandedMenus((prev) => ({
@@ -108,31 +87,38 @@ const AdminLayout = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="animate-pulse flex space-x-4">
+          <div className="rounded-full bg-gray-700 h-12 w-12"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-800 font-sans">
+    <div className="flex min-h-screen bg-gray-100 text-gray-800 font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white flex flex-col p-4 space-y-2 sticky top-0 h-screen shadow-lg transition-all duration-300">
-        <div className="p-4 mb-4">
-          <h2 className="text-2xl font-bold tracking-tight flex items-center">
-            <span className="bg-blue-600 text-white p-2 rounded-lg mr-3">
-              <FiHome />
-            </span>
-            Admin Panel
-          </h2>
+      <aside className="w-64 bg-gray-900 text-gray-200 flex flex-col p-0 sticky top-0 h-screen shadow-xl border-r border-gray-800">
+        {/* Logo and User Info */}
+        <div className="p-6 pb-4 mb-2 border-b border-gray-800">
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-600 text-white p-2 rounded-lg">
+              <FiHome className="text-xl" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">Admin Panel</h2>
+          </div>
           {user && (
-            <p className="text-sm mt-2 text-gray-300">
-              Hello, {user.name || user.phone || "Admin"}
+            <p className="text-sm mt-3 text-gray-400 font-medium">
+              Welcome back,{" "}
+              <span className="text-blue-400">
+                {user.name || user.phone || "Admin"}
+              </span>
             </p>
           )}
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto">
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isItemActive = isActive(item.path, item.exact);
@@ -142,10 +128,10 @@ const AdminLayout = ({ children }) => {
               <div key={item.path} className="space-y-1">
                 <div
                   onClick={() => (hasSubmenu ? toggleMenu(item.label) : null)}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition duration-200 cursor-pointer ${
+                  className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition duration-200 cursor-pointer ${
                     isItemActive
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      ? "bg-blue-900/50 text-blue-100 border-l-4 border-blue-500"
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
                   }`}
                 >
                   <Link
@@ -153,26 +139,30 @@ const AdminLayout = ({ children }) => {
                     className="flex items-center flex-1"
                     onClick={(e) => hasSubmenu && e.preventDefault()}
                   >
-                    <span className="mr-3 text-lg">{item.icon}</span>
-                    {item.label}
+                    <span className="mr-3">{item.icon}</span>
+                    <span>{item.label}</span>
                   </Link>
                   {hasSubmenu && (
                     <span className="text-gray-400">
-                      {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+                      {isExpanded ? (
+                        <FiChevronUp className="text-sm" />
+                      ) : (
+                        <FiChevronDown className="text-sm" />
+                      )}
                     </span>
                   )}
                 </div>
 
                 {hasSubmenu && isExpanded && (
-                  <div className="ml-8 space-y-1">
+                  <div className="ml-8 mt-1 mb-2 space-y-1">
                     {item.submenu.map((subItem) => (
                       <Link
                         key={subItem.path}
                         to={subItem.path}
-                        className={`block px-3 py-2 text-xs rounded-lg transition duration-200 ${
+                        className={`block px-3 py-2.5 text-sm rounded-lg transition duration-200 ${
                           isActive(subItem.path, true)
-                            ? "bg-gray-600 text-white"
-                            : "text-gray-300 hover:bg-gray-600 hover:text-white"
+                            ? "bg-gray-800 text-blue-300 font-medium"
+                            : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
                         }`}
                       >
                         {subItem.label}
@@ -185,33 +175,23 @@ const AdminLayout = ({ children }) => {
           })}
         </nav>
 
-        <div className="pt-4 border-t border-gray-700 mt-auto">
+        {/* Logout */}
+        <div className="p-4 border-t border-gray-800 mt-auto">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-3 py-2 text-red-400 hover:text-red-300 text-sm font-medium transition rounded-lg hover:bg-gray-700"
+            className="flex items-center w-full px-4 py-2.5 text-red-300 hover:text-white text-sm font-medium transition rounded-lg hover:bg-red-900/30"
           >
-            <FiLogOut className="mr-2 text-lg" />
+            <FiLogOut className="mr-3" />
             Logout
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="bg-white shadow-sm px-6 py-3 sticky top-0 z-10 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-700">
-            {navItems.find((item) => isActive(item.path, item.exact))?.label ||
-              "Dashboard"}
-          </h1>
-          <div className="flex items-center space-x-4">
-            {/* future: notifications, profile */}
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <section className="flex-1 overflow-y-auto p-6 bg-gray-50">
-          <div className="bg-white rounded-xl shadow-sm p-6 min-h-[calc(100vh-120px)]">
+      {/* Main Content - Simplified without header */}
+      <main className="flex-1 flex flex-col overflow-hidden bg-gray-100">
+        {/* Direct content without title header */}
+        <section className="flex-1 overflow-y-auto p-6 bg-gray-100">
+          <div className="bg-white rounded-xl shadow-xs p-6 min-h-[calc(100vh-120px)] border border-gray-200">
             {children}
           </div>
         </section>
