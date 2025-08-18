@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FaBus, FaGlobeAmericas, FaArrowRight } from "react-icons/fa";
-import { HiOutlineTranslate } from "react-icons/hi";
+import { FaGlobeAmericas, FaArrowRight } from "react-icons/fa";
+// import { HiOutlineTranslate } from "react-icons/hi";
+import smtLogo from "../assets/images/smt-logo.png";
 
 const LanguageScreen = () => {
   const navigate = useNavigate();
@@ -24,20 +25,24 @@ const LanguageScreen = () => {
       <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl transition-all duration-300 hover:shadow-3xl">
         {/* Logo Section */}
         <div className="flex flex-col items-center mb-8">
-          <div className="bg-indigo-100 p-4 rounded-full mb-4">
-            <FaBus className="text-indigo-600 text-3xl" />
+          <div className="bg-white p-4 rounded-full mb-4">
+            <img src={smtLogo} alt="N/A" height={180} width={180} />
+            {/* <FaBus className="text-indigo-600 text-3xl" /> */}
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Solapur City Bus</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Track My Bus</h1>
+          <p className="text-gray-500 text-1xl">
+            Powered by
+          </p>
           <p className="text-gray-500 mt-1">
-            Powered by Solapur Municipal Corporation
+            Solapur Municipal Corporation
           </p>
         </div>
 
         {/* Language Selection */}
         <div className="flex flex-col items-center mb-6">
-          <div className="bg-indigo-100 p-3 rounded-full mb-3">
+          {/* <div className="bg-indigo-100 p-3 rounded-full mb-3">
             <HiOutlineTranslate className="text-indigo-600 text-2xl" />
-          </div>
+          </div> */}
           <h2 className="text-2xl font-bold text-gray-800">
             Choose Your Language
           </h2>

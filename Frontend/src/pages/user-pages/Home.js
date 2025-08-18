@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   FaBusAlt,
   FaUserCircle,
-  FaSignOutAlt,
+  // FaSignOutAlt,
   FaSearch,
   FaSpinner,
   FaChevronRight,
@@ -14,17 +14,17 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Select from "react-select";
 import axiosInstance from "../../utils/axiosInstance.js";
-import busSevaLogo from "../../assets/images/bus-seva-logo.png";
-import { useDispatch } from "react-redux";
+import busSevaLogo from "../../assets/images/smt-logo.png";
+// import { useDispatch } from "react-redux";
 
 const Home = () => {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
-  const [routes, setRoutes] = useState([]); // Store all routes
+  const [routes, setRoutes] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
   const [destinationOptions, setDestinationOptions] = useState([]);
   const [matchedBuses, setMatchedBuses] = useState(null);
@@ -39,15 +39,12 @@ const Home = () => {
     day: "numeric",
   });
 
-  // Fetch all routes
   useEffect(() => {
     const fetchStops = async () => {
       try {
         setLoadingStops(true);
         const res = await axiosInstance.get(`/routes`);
-
-        setRoutes(res.data); // store full list
-
+        setRoutes(res.data);
         const sources = [...new Set(res.data.map((item) => item.source))];
         setSourceOptions(
           sources.map((source) => ({
@@ -57,24 +54,20 @@ const Home = () => {
         );
       } catch (err) {
         console.error("Error fetching stops:", err);
-        toast.error("Failed to load stops.");
+        toast.error(t("home.toastStopsError"));
       } finally {
         setLoadingStops(false);
       }
     };
-
     fetchStops();
-  }, []);
+  }, [t]);
 
-  // Filter destination list when source changes
   useEffect(() => {
     if (source) {
       const filteredDestinations = routes
         .filter((r) => r.source === source)
         .map((r) => r.destination);
-
       const uniqueDestinations = [...new Set(filteredDestinations)];
-
       setDestinationOptions(
         uniqueDestinations.map((d) => ({
           value: d,
@@ -87,31 +80,25 @@ const Home = () => {
     }
   }, [source, routes]);
 
-  // Find bus for specific route
   const handleFindBus = async () => {
     if (!source || !destination || source === destination) {
-      toast.warning("Please select different source and destination");
+      toast.warning(t("home.toastInvalidRoute"));
       return;
     }
-
     setMatchedBuses([]);
-
     try {
       setLoadingBuses(true);
       const res = await axiosInstance.get(`/bus-routes-mapping`);
-
       const filteredBuses = res.data.filter(
         (bus) =>
           bus?.route?.source === source &&
           bus?.route?.destination === destination
       );
-
       if (filteredBuses.length === 0) {
-        toast.info("No buses found for this route");
+        toast.info(t("home.toastNoBuses"));
         setMatchedBuses([]);
         return;
       }
-
       const sortedBuses = filteredBuses.sort((a, b) => {
         const timeA = a.timings?.[0] || "00:00";
         const timeB = b.timings?.[0] || "00:00";
@@ -119,12 +106,10 @@ const Home = () => {
         const [hB, mB] = timeB.split(":").map(Number);
         return hA * 60 + mA - (hB * 60 + mB);
       });
-
       setMatchedBuses(sortedBuses);
-      console.log(sortedBuses, "Sorted Buses");
     } catch (err) {
       console.error("Error fetching buses:", err);
-      toast.error("Error fetching buses. Please try again.");
+      toast.error(t("home.toastBusError"));
       setMatchedBuses([]);
     } finally {
       setLoadingBuses(false);
@@ -161,35 +146,29 @@ const Home = () => {
         <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-blue-50 rounded-lg">
-              <img
-                src={busSevaLogo}
-                alt="Bus Seva"
-                className="h-10 w-10 md:h-12 md:w-12 rounded-lg"
-              />
+              <img src={busSevaLogo} alt="Bus Seva" height={140} width={140} />
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <span className="bg-gradient-to-r from-indigo-600  to-indigo-400 bg-clip-text text-transparent">
-                  Track My Bus
+                <span className="text-black bg-clip-text text-transparent">
+                  {t("home.trackMyBus")}
                 </span>
               </h1>
               <p className="text-xs md:text-sm text-gray-500 font-medium">
-                Find your perfect bus route
+                {t("home.findPerfectRoute")}
               </p>
               <p className="text-xs text-gray-400 mt-1">{currentDate}</p>
             </div>
           </div>
-
-          {/* Profile Dropdown */}
           <div className="relative">
             <button
               className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              aria-label="User profile"
+              aria-label={t("home.profile")}
             >
               <FaUserCircle className="text-indigo-600 text-xl" />
               <span className="hidden md:inline text-sm font-medium text-gray-700">
-                Profile
+                {t("home.profile")}
               </span>
             </button>
             {showProfileDropdown && (
@@ -201,7 +180,7 @@ const Home = () => {
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                 >
-                  View Profile
+                  {t("home.viewProfile")}
                 </button>
               </div>
             )}
@@ -212,35 +191,33 @@ const Home = () => {
         <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm space-y-4 transition-all hover:shadow-md">
           <div className="space-y-2">
             <h2 className="text-xl font-bold text-gray-800">
-              Find Your Bus Route
+              {t("home.findBusRoute")}
             </h2>
             <p className="text-sm text-gray-500">
-              Search for available buses between stations
+              {t("home.searchBusesBetween")}
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
                 <FaMapMarkerAlt className="text-indigo-500" />
-                Source
+                {t("home.source")}
               </label>
               <Select
                 options={sourceOptions}
                 value={sourceOptions.find((opt) => opt.value === source)}
                 onChange={(opt) => setSource(opt?.value)}
-                placeholder="Select source"
+                placeholder={t("home.selectSource")}
                 className="text-sm"
                 isLoading={loadingStops}
                 isDisabled={loadingStops}
                 styles={customSelectStyles}
               />
             </div>
-
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
                 <FaMapMarkerAlt className="text-red-500" />
-                Destination
+                {t("home.destination")}
               </label>
               <Select
                 options={destinationOptions}
@@ -248,7 +225,7 @@ const Home = () => {
                   (opt) => opt.value === destination
                 )}
                 onChange={(opt) => setDestination(opt?.value)}
-                placeholder="Select destination"
+                placeholder={t("home.selectDestination")}
                 className="text-sm"
                 isLoading={loadingStops}
                 isDisabled={loadingStops || !source}
@@ -256,7 +233,6 @@ const Home = () => {
               />
             </div>
           </div>
-
           <button
             onClick={handleFindBus}
             disabled={loadingBuses || loadingStops}
@@ -266,7 +242,7 @@ const Home = () => {
               <FaSpinner className="animate-spin" />
             ) : (
               <>
-                <FaSearch /> Find Buses
+                <FaSearch /> {t("home.findBuses")}
               </>
             )}
           </button>
@@ -277,7 +253,7 @@ const Home = () => {
           (loadingBuses ? (
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center justify-center space-y-3">
               <FaSpinner className="animate-spin text-2xl text-blue-600" />
-              <p className="text-gray-600">Searching for buses...</p>
+              <p className="text-gray-600">{t("home.searchingBuses")}</p>
             </div>
           ) : matchedBuses.length > 0 ? (
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 transition-all hover:shadow-md">
@@ -286,14 +262,16 @@ const Home = () => {
                   <span className="bg-blue-100 p-2 rounded-lg">
                     <FaBusAlt className="text-indigo-600" />
                   </span>
-                  Available Buses
+                  {t("home.availableBuses")}
                 </h3>
                 <p className="text-sm text-gray-500">
                   {matchedBuses.length}{" "}
-                  {matchedBuses.length === 1 ? "route" : "routes"} found
+                  {matchedBuses.length === 1
+                    ? t("home.route")
+                    : t("home.routes")}{" "}
+                  {t("home.found")}
                 </p>
               </div>
-
               <div className="space-y-4">
                 {matchedBuses.map((bus) => (
                   <div
@@ -304,7 +282,7 @@ const Home = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className="bg-blue-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-sm">
-                          {bus?.bus?.busNumber || "N/A"}
+                          {bus?.bus?.busNumber || t("home.na")}
                         </div>
                         <div className="text-sm font-medium text-gray-500">
                           {bus?.route?.source}{" "}
@@ -317,11 +295,10 @@ const Home = () => {
                         {bus?.timings?.[0] || "-"}
                       </div>
                     </div>
-
                     <div className="text-sm text-gray-600">
                       <div className="flex items-start gap-2">
                         <span className="text-gray-400 font-medium mt-0.5">
-                          Via:
+                          {t("home.via")}
                         </span>
                         <span>{bus?.route?.via || "—"}</span>
                       </div>
@@ -336,10 +313,10 @@ const Home = () => {
                 <FaBusAlt className="text-3xl text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-700 mb-1">
-                No buses found
+                {t("home.noBusesFound")}
               </h3>
               <p className="text-sm text-gray-500">
-                No buses available between {source} and {destination}
+                {t("home.noBusesAvailable", { source, destination })}
               </p>
               <button
                 onClick={() => {
@@ -349,16 +326,18 @@ const Home = () => {
                 }}
                 className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
               >
-                Try different route
+                {t("home.tryDifferentRoute")}
               </button>
             </div>
           ))}
 
         {/* Footer */}
         <footer className="text-center text-xs text-gray-500 mt-8 pb-6">
-          <p>© {new Date().getFullYear()} Bus Seva. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {t("home.busSevaAllRights")}
+          </p>
           <p className="mt-1 text-gray-400">
-            Making public transport accessible
+            {t("home.makingTransportAccessible")}
           </p>
         </footer>
       </div>

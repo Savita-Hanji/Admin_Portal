@@ -40,6 +40,7 @@ const ManageBusRouteMapping = () => {
       setBuses(busRes.data);
       setRoutes(routeRes.data);
       setMappings(mapRes.data);
+      console.log(mapRes.data,"MspRes Data");
 
       setLoading({ buses: false, routes: false, mappings: false });
     } catch (error) {
@@ -110,6 +111,7 @@ const ManageBusRouteMapping = () => {
   };
 
   const handleEdit = (mapping) => {
+    // console.log(mapping,"Inside handle Mapping");
     setForm({
       bus: mapping.bus._id,
       route: mapping.route._id,

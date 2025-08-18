@@ -98,6 +98,7 @@ const BusRouteStops = () => {
   };
 
   useEffect(() => {
+    
     fetchData();
     let intervalId;
     if (autoRefresh) {
@@ -301,9 +302,9 @@ const BusRouteStops = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-green-400 mr-3"></div>
-                  <h3 className="font-medium text-gray-900">
+                  <h4 className="font-small text-red-900">
                     {busRouteData.route.source}
-                  </h3>
+                  </h4>
                 </div>
                 <div className="flex items-center text-sm text-gray-600 space-x-4">
                   <div className="flex items-center">
@@ -348,7 +349,7 @@ const BusRouteStops = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full bg-indigo-400 mr-3"></div>
-                    <h3 className="font-medium text-gray-900">{stop.name}</h3>
+                    <h4 className="font-medium text-gray-900">{stop.name}</h4>
                   </div>
                   <div className="flex items-center text-sm text-gray-600 space-x-4">
                     <div className="flex items-center">
@@ -412,9 +413,9 @@ const BusRouteStops = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-red-400 mr-3"></div>
-                  <h3 className="font-medium text-gray-900">
+                  <h4 className="font-medium text-gray-900">
                     {busRouteData.route.destination}
-                  </h3>
+                  </h4>
                 </div>
                 <div className="flex items-center text-sm text-gray-600 space-x-4">
                   <div className="flex items-center">

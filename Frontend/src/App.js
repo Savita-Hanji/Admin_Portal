@@ -3,12 +3,12 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
+  // Navigate,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { fetchUser } from "./slices/authSlice";
 import UserRoute from "./components/UserRoute.js";
 import AdminRoute from "./components/AdminRoute.js";

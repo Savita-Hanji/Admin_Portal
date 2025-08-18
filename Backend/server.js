@@ -13,6 +13,7 @@ import PosMachine from "./routes/pos.route.js";
 import busPosMapping from "./routes/busPosMapping.route.js";
 import authRoutes from "./routes/auth.route.js";
 import connectDB from "./utils/connectDB.js";
+// import gpsRoutes from "./routes/gps.route.js";
 dotenv.config();
 
 const app = express();
@@ -35,6 +36,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/pos-machines", PosMachine);
 app.use("/api/bus-pos-mapping", busPosMapping);
 app.use("/api/auth", authRoutes);
+// app.use("/api/gps", gpsRoutes);
 
 // 🛰️ Socket.IO Setup (without GPS simulation)
 const server = http.createServer(app);

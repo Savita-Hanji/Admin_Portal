@@ -1,146 +1,3 @@
-// import React, { useEffect } from "react";
-// import {
-//   FaUserCircle,
-//   FaPhoneAlt,
-//   FaEnvelope,
-//   FaArrowLeft,
-//   FaSignOutAlt,
-//   FaEdit,
-// } from "react-icons/fa";
-// import { useNavigate } from "react-router-dom";
-// import { useTranslation } from "react-i18next";
-// import { toast } from "react-toastify";
-// import { useDispatch, useSelector } from "react-redux";
-// import { logoutUser, fetchUser } from "../../slices/authSlice.js";
-
-// const Profile = () => {
-//   const { t } = useTranslation();
-//   const navigate = useNavigate();
-//   const dispatch = useDispatch();
-
-//   const { user, loading } = useSelector((state) => state.auth);
-
-//   useEffect(() => {
-//     if (!user) {
-//       dispatch(fetchUser())
-//         .unwrap()
-//         .catch(() => {
-//           toast.error("Please log in first");
-//           navigate("/login");
-//         });
-//     }
-//   }, [dispatch, user, navigate]);
-
-//   const handleLogout = async () => {
-//     try {
-//       await dispatch(logoutUser()).unwrap();
-//       toast.success("Logged out successfully");
-//       navigate("/login");
-//     } catch (error) {
-//       toast.error(error || "Logout failed");
-//     }
-//   };
-
-//   if (loading || !user) {
-//     return (
-//       <div className="min-h-screen flex justify-center items-center bg-gray-50">
-//         <div className="flex flex-col items-center">
-//           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-//           <p className="text-lg text-gray-700">Loading profile...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-sans p-4 md:p-6">
-//       <div className="max-w-md mx-auto bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
-//         {/* Header with Back Button */}
-//         <div className="px-6 pt-6 pb-2">
-//           <button
-//             onClick={() => navigate("/home")}
-//             className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors group"
-//           >
-//             <FaArrowLeft className="transition-transform group-hover:-translate-x-1" />
-//             <span className="text-sm font-medium">Back to Home</span>
-//           </button>
-//         </div>
-
-//         {/* Profile Content */}
-//         <div className="p-6 pt-0">
-//           {/* Profile Picture and Name */}
-//           <div className="text-center mb-6">
-//             <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full mb-4 shadow-inner">
-//               <FaUserCircle className="text-4xl md:text-5xl text-blue-500" />
-//             </div>
-//             <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
-//               {user.name}
-//             </h2>
-//             <p className="text-xs md:text-sm text-gray-500 mt-1 px-4 py-1 bg-gray-100 rounded-full inline-block">
-//               {user.role === "ADMIN" ? "Administrator" : "Registered User"}
-//             </p>
-//           </div>
-
-//           {/* Profile Details */}
-//           <div className="space-y-3 mb-6">
-//             {/* Phone Number Card */}
-//             <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-//               <div className="p-2 bg-blue-100 rounded-full flex-shrink-0">
-//                 <FaPhoneAlt className="text-blue-600 text-sm md:text-base" />
-//               </div>
-//               <div className="flex-grow">
-//                 <p className="text-xs text-gray-500">Phone Number</p>
-//                 <p className="font-medium text-gray-800 text-sm md:text-base">
-//                   +91 {user.phone}
-//                 </p>
-//               </div>
-//             </div>
-
-//             {/* Email Card */}
-//             <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-//               <div className="p-2 bg-blue-100 rounded-full flex-shrink-0">
-//                 <FaEnvelope className="text-blue-600 text-sm md:text-base" />
-//               </div>
-//               <div className="flex-grow">
-//                 <p className="text-xs text-gray-500">Email Address</p>
-//                 <p className="font-medium text-gray-800 text-sm md:text-base break-all">
-//                   {user.email || "N/A"}
-//                 </p>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Action Buttons */}
-//           <div className="flex flex-col sm:flex-row gap-3">
-//             <button
-//               onClick={() => navigate("/edit-profile")}
-//               className="flex-1 py-3 px-4 bg-white border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
-//             >
-//               <FaEdit className="text-sm" /> Edit Profile
-//             </button>
-//             <button
-//               onClick={handleLogout}
-//               className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
-//             >
-//               <FaSignOutAlt className="text-sm" /> Logout
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Footer */}
-//         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-//           <p className="text-xs text-gray-500 text-center">
-//             Member since {new Date(user.createdAt).toLocaleDateString()}
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Profile;
-
-
 import React, { useEffect, useState } from "react";
 import {
   FaUserCircle,
@@ -159,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   logoutUser,
   fetchUser,
-  updateProfile
+  updateProfile,
 } from "../../slices/authSlice.js";
 
 const Profile = () => {
@@ -176,21 +33,21 @@ const Profile = () => {
       dispatch(fetchUser())
         .unwrap()
         .catch(() => {
-          toast.error("Please log in first");
+          toast.error(t("profile.login_first"));
           navigate("/login");
         });
     } else {
       setEditedName(user.name);
     }
-  }, [dispatch, user, navigate]);
+  }, [dispatch, user, navigate, t]);
 
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
-      toast.success("Logged out successfully");
+      toast.success(t("profile.logout_success"));
       navigate("/login");
     } catch (error) {
-      toast.error(error || "Logout failed");
+      toast.error(error || t("profile.logout_failed"));
     }
   };
 
@@ -205,17 +62,17 @@ const Profile = () => {
 
   const handleSaveName = async () => {
     if (!editedName.trim()) {
-      toast.error("Name cannot be empty");
+      toast.error(t("profile.name_empty"));
       return;
     }
 
     try {
       setIsUpdating(true);
       await dispatch(updateProfile({ name: editedName })).unwrap();
-      toast.success("Profile updated successfully");
+      toast.success(t("profile.update_success"));
       setIsEditing(false);
     } catch (error) {
-      toast.error(error || "Failed to update profile");
+      toast.error(error || t("profile.update_failed"));
     } finally {
       setIsUpdating(false);
     }
@@ -226,7 +83,7 @@ const Profile = () => {
       <div className="min-h-screen flex justify-center items-center bg-gray-50">
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-lg text-gray-700">Loading profile...</p>
+          <p className="text-lg text-gray-700">{t("profile.loading")}</p>
         </div>
       </div>
     );
@@ -242,10 +99,11 @@ const Profile = () => {
             className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors group"
           >
             <FaArrowLeft className="transition-transform group-hover:-translate-x-1" />
-            <span className="text-sm font-medium">Back to Home</span>
+            <span className="text-sm font-medium">
+              {t("profile.back_home")}
+            </span>
           </button>
         </div>
-
         {/* Profile Content */}
         <div className="p-6 pt-0">
           {/* Profile Picture and Name */}
@@ -298,7 +156,9 @@ const Profile = () => {
             )}
 
             <p className="text-xs md:text-sm text-gray-500 mt-1 px-4 py-1 bg-gray-100 rounded-full inline-block">
-              {user.role === "ADMIN" ? "Administrator" : "Registered User"}
+              {user.role === "ADMIN"
+                ? t("profile.role_admin")
+                : t("profile.role_user")}
             </p>
           </div>
 
@@ -310,7 +170,7 @@ const Profile = () => {
                 <FaPhoneAlt className="text-indigo-600 text-sm md:text-base" />
               </div>
               <div className="flex-grow">
-                <p className="text-xs text-gray-500">Phone Number</p>
+                <p className="text-xs text-gray-500">{t("profile.phone")}</p>
                 <p className="font-medium text-gray-800 text-sm md:text-base">
                   +91 {user.phone}
                 </p>
@@ -323,29 +183,30 @@ const Profile = () => {
                 <FaEnvelope className="text-indigo-600 text-sm md:text-base" />
               </div>
               <div className="flex-grow">
-                <p className="text-xs text-gray-500">Email Address</p>
+                <p className="text-xs text-gray-500">{t("profile.email")}</p>
                 <p className="font-medium text-gray-800 text-sm md:text-base break-all">
-                  {user.email || "N/A"}
+                  {user.email || t("profile.na")}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Action Button */}
+          {/* Logout Button */}
           <div className="flex justify-center">
             <button
               onClick={handleLogout}
               className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-indigo-400 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
             >
-              <FaSignOutAlt className="text-sm" /> Logout
+              <FaSignOutAlt className="text-sm" /> {t("profile.logout")}
             </button>
           </div>
         </div>
-
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          {" "}
           <p className="text-xs text-gray-500 text-center">
-            Member since {new Date(user.createdAt).toLocaleDateString()}
+            {t("profile.member_since")}{" "}
+            {new Date(user.createdAt).toLocaleDateString()}{" "}
           </p>
         </div>
       </div>

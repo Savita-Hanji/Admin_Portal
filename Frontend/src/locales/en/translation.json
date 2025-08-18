@@ -1,58 +1,97 @@
 {
-  "signin": {
-    "title": "Track My Bus Login",
-    "subtitle": "Track Your ride live, anytime!",
-    "phone_placeholder": "Phone Number",
-    "password_placeholder": "Password",
-    "sign_in": "Sign In",
-    "create_account_prompt": "Don't have an account?",
-    "create_account_link": "Create One",
-    "invalid_phone": "Please enter a valid 10-digit phone number.",
-    "short_password": "Password must be at least 6 characters."
+  "login": {
+    "title": "Login",
+    "subtitle": "Welcome back! Please enter your details",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "Enter 10 digit phone number",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "button": "Login",
+    "loading": "Logging in...",
+    "noAccount": "Don't have an account?",
+    "createOne": "Create one",
+    "success": "Login successful",
+    "errors": {
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Phone number must be 10 digits",
+      "passwordRequired": "Password is required",
+      "passwordShort": "Password must be at least 6 characters"
+    }
   },
   "signup": {
-    "title": "Create Account",
-    "subtitle": "Join the Bus Tracking Network!",
+    "title": "Sign Up",
+    "subtitle": "Create a new account",
     "name_placeholder": "Full Name",
     "phone_placeholder": "Phone Number",
     "password_placeholder": "Password",
     "confirm_password_placeholder": "Confirm Password",
+    "password_mismatch": "Passwords do not match",
     "sign_up": "Sign Up",
     "already_have_account": "Already have an account?",
-    "login": "Login",
-    "password_mismatch": "Passwords do not match."
+    "success": "Registered Successfully",
+    "failure": "Registration failed"
+  },
+  "signin": {
+    "sign_in": "Sign In"
+  },
+  "errors": {
+    "invalid_phone": "Invalid phone number",
+    "short_password": "Password must be at least 6 characters",
+    "password_mismatch": "Passwords do not match"
+  },
+  "common": {
+    "processing": "Processing..."
   },
   "home": {
-    "title": "Track My Bus",
-    "subheading": "Solapur Municipal Corporation",
-    "profile": "User Profile",
-    "heading": "Find a Bus 🗺️",
+    "trackMyBus": "Track My Bus",
+    "findPerfectRoute": "Find the perfect route for your journey",
+    "profile": "Profile",
+    "viewProfile": "View Profile",
+
+    "findBusRoute": "Find Bus Route",
+    "searchBusesBetween": "Search buses running between two locations",
     "source": "Source",
+    "selectSource": "Select Source",
     "destination": "Destination",
-    "select_source": "-- Select Source --",
-    "select_destination": "-- Select Destination --",
-    "button": "Find Buses",
-    "live_map": "Live Map",
-    "route_info": "Route Info",
-    "footer": "© 2025 Solapur Municipal Corporation",
-    "alert": "Please choose different Source and Destination stops.",
-    "result": "🚌 Showing buses from {{source}} to {{destination}}...",
-    "no_buses": "No buses available for this route.",
-    "available_buses": "Available Buses",
-    "stops": {
-      "station": "Solapur Station",
-      "temple": "Siddheshwar Temple",
-      "midc": "MIDC",
-      "hotgi": "Hotgi",
-      "akkalkot": "Akkalkot Road",
-      "university": "Solapur University",
-      "vijapur": "Vijapur Road"
-    }
+    "selectDestination": "Select Destination",
+    "findBuses": "Find Buses",
+    "searchingBuses": "Searching for buses...",
+    "availableBuses": "Available Buses",
+    "route": "route",
+    "routes": "routes",
+    "found": "found",
+    "via": "Via",
+    "na": "N/A",
+
+    "noBusesFound": "No buses found",
+    "noBusesAvailable": "No buses available from {{source}} to {{destination}}.",
+    "tryDifferentRoute": "Try a different route",
+
+    "busSevaAllRights": "Bus Seva. All rights reserved.",
+    "makingTransportAccessible": "Making transport accessible for everyone",
+
+    "toastStopsError": "Error fetching stops. Please try again.",
+    "toastInvalidRoute": "Please select a valid source and destination.",
+    "toastNoBuses": "No buses available for this route.",
+    "toastBusError": "Error fetching bus details. Please try again."
   },
   "profile": {
-    "back": "Back to Home",
-    "registered_user": "Registered User",
-    "edit": "Edit Profile",
-    "logout": "Logout"
+    "login_first": "Please log in first",
+    "logout_success": "Logged out successfully",
+    "logout_failed": "Logout failed",
+    "name_empty": "Name cannot be empty",
+    "update_success": "Profile updated successfully",
+    "update_failed": "Failed to update profile",
+    "loading": "Loading profile...",
+    "back_home": "Back to Home",
+    "role_admin": "Administrator",
+    "role_user": "Registered User",
+    "phone": "Phone Number",
+    "email": "Email Address",
+    "na": "N/A",
+    "logout": "Logout",
+    "member_since": "Member since"
   }
 }

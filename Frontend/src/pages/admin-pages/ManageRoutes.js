@@ -248,6 +248,8 @@ const ManageRoutes = () => {
       (route.via && route.via.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  console.log(uniqueSources,"Heyyyyyyyyyy");
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -319,11 +321,11 @@ const ManageRoutes = () => {
                     placeholder="Enter source location"
                     list="sourceSuggestions"
                   />
-                  <datalist id="sourceSuggestions">
+                  {/* <datalist id="sourceSuggestions">
                     {uniqueSources.map((source, index) => (
                       <option key={index} value={source} />
                     ))}
-                  </datalist>
+                  </datalist> */}
                 </div>
 
                 {/* Destination Field */}
@@ -341,11 +343,11 @@ const ManageRoutes = () => {
                     placeholder="Enter destination location"
                     list="destinationSuggestions"
                   />
-                  <datalist id="destinationSuggestions">
+                  {/* <datalist id="destinationSuggestions">
                     {uniqueDestinations.map((dest, index) => (
                       <option key={index} value={dest} />
                     ))}
-                  </datalist>
+                  </datalist> */}
                 </div>
 
                 <div>

@@ -11,6 +11,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosInstance.js";
+import smtLogo from "../../assets/images/smt-logo.png";
 
 const SignUp = () => {
   const { t } = useTranslation();
@@ -31,7 +32,7 @@ const SignUp = () => {
 
   const isValid =
     form.name &&
-    /^\d{10}$/.test(form.phone) &&
+    /^[6-9]\d{9}$/.test(form.phone) &&
     form.password.length >= 6 &&
     form.password === form.confirm;
 
@@ -39,20 +40,20 @@ const SignUp = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!/^\d{10}$/.test(form.phone)) {
-      toast.error("Invalid phone number");
+    if (!/^[6-9]\d{9}$/.test(form.phone)) {
+      toast.error(t("errors.invalid_phone"));
       setIsLoading(false);
       return;
     }
 
     if (form.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error(t("errors.short_password"));
       setIsLoading(false);
       return;
     }
 
     if (form.password !== form.confirm) {
-      toast.error("Passwords do not match");
+      toast.error(t("errors.password_mismatch"));
       setIsLoading(false);
       return;
     }
@@ -61,10 +62,10 @@ const SignUp = () => {
       const res = await axiosInstance.post("/auth/register", form);
       console.log(res.data);
       navigate("/home");
-      toast.success("Registered Successfully");
+      toast.success(t("signup.success"));
     } catch (error) {
       console.log("Error in registerUser in SignUp.js", error.message);
-      toast.error(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || t("signup.failure"));
     } finally {
       setIsLoading(false);
     }
@@ -74,8 +75,8 @@ const SignUp = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl transition-all duration-300 hover:shadow-3xl">
         <div className="flex flex-col items-center mb-6">
-          <div className="bg-indigo-100 p-4 rounded-full mb-4">
-            <FaUserPlus className="text-indigo-600 text-3xl" />
+          <div className="bg-white p-4 rounded-full mb-4">
+            <img src={smtLogo} alt="Logo" height={180} width={180} />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-1">
             {t("signup.title")}
@@ -201,7 +202,7 @@ const SignUp = () => {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Processing...
+                {t("common.processing")}
               </>
             ) : (
               <>
