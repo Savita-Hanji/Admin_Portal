@@ -45,7 +45,7 @@ const Profile = () => {
     try {
       await dispatch(logoutUser()).unwrap();
       toast.success(t("profile.logout_success"));
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       toast.error(error || t("profile.logout_failed"));
     }

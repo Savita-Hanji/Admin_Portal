@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FaMapMarkerAlt,
   FaBus,
@@ -23,14 +23,30 @@ const BusRouteStops = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [selectedTripIndex, setSelectedTripIndex] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [currentStopIndex, setCurrentStopIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-  const fetchData = async () => {
+  // Wrap fetchData in useCallback to avoid infinite re-renders
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axiosInstance.get(`/bus-routes-mapping/${busID}`);
       setBusRouteData(res.data.data);
       setLastUpdated(new Date());
       setError(null);
+
+      // Simulate bus progress (in a real app, this would come from API)
+      if (res.data.data && res.data.data.route.trips.length > 0) {
+        const stops = res.data.data.route.trips[selectedTripIndex].stops;
+        const randomProgress = Math.min(
+          Math.floor(Math.random() * stops.length),
+          stops.length - 1
+        );
+        setCurrentStopIndex(randomProgress);
+        setProgress(
+          Math.min(Math.floor((randomProgress / stops.length) * 100), 95)
+        );
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(
@@ -43,7 +59,7 @@ const BusRouteStops = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [busID, autoRefresh, selectedTripIndex]);
 
   const toggleStopExpand = (stopId) => {
     setExpandedStop(expandedStop === stopId ? null : stopId);
@@ -61,20 +77,6 @@ const BusRouteStops = () => {
     return `${displayHour}:${minutes} ${period}`;
   };
 
-  const calculateStopTime = (trip, timingOffset) => {
-    const [hours, minutes] = trip.sourceTime.split(":");
-    const sourceDate = new Date();
-    sourceDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-
-    const [offsetHours, offsetMinutes] = timingOffset.split(":");
-    sourceDate.setHours(sourceDate.getHours() + parseInt(offsetHours, 10));
-    sourceDate.setMinutes(
-      sourceDate.getMinutes() + parseInt(offsetMinutes, 10)
-    );
-
-    return formatTime(`${sourceDate.getHours()}:${sourceDate.getMinutes()}`);
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "Active":
@@ -89,6 +91,7 @@ const BusRouteStops = () => {
   };
 
   const calculateDistanceFromSource = (index, totalStops) => {
+    if (!busRouteData) return 0;
     const totalDistance = busRouteData.route.distance;
     // Distribute distance proportionally with more weight given to later stops
     const baseDistance = (totalDistance * (index + 1)) / (totalStops + 1);
@@ -97,21 +100,31 @@ const BusRouteStops = () => {
     return Math.round(baseDistance + variation);
   };
 
+  const handleTripChange = (index) => {
+    setSelectedTripIndex(index);
+    setCurrentStopIndex(0);
+    setProgress(0);
+  };
+
   useEffect(() => {
-    
     fetchData();
     let intervalId;
     if (autoRefresh) {
       intervalId = setInterval(fetchData, 30000);
     }
     return () => clearInterval(intervalId);
-  }, [busID, autoRefresh]);
+  }, [fetchData, autoRefresh]);
 
   if (loading && !busRouteData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-indigo-600 mb-4" />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <FaSpinner className="text-4xl text-indigo-600 mb-4" />
+          </motion.div>
           <p className="text-gray-600">Loading route information...</p>
         </div>
       </div>
@@ -151,6 +164,8 @@ const BusRouteStops = () => {
   }
 
   const selectedTrip = busRouteData.route.trips[selectedTripIndex];
+  const totalStops = selectedTrip.stops.length;
+  const busPosition = (currentStopIndex / totalStops) * 100;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans">
@@ -198,11 +213,7 @@ const BusRouteStops = () => {
             <p className="text-indigo-100 text-sm">
               Via: {busRouteData.route.via}
             </p>
-            {busRouteData.remarks && (
-              <p className="text-indigo-100 text-sm mt-1">
-                Remarks: {busRouteData.remarks}
-              </p>
-            )}
+            {/* Remarks section removed as requested */}
           </div>
           <div
             className={`${getStatusColor(
@@ -213,12 +224,28 @@ const BusRouteStops = () => {
           </div>
         </div>
 
+        {/* Progress bar */}
+        <div className="mt-4 mb-4">
+          <div className="flex justify-between text-xs text-indigo-200 mb-1">
+            <span>Route Progress</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-green-400 rounded-full"
+              initial={{ width: "0%" }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
+
         {/* Trip Selection */}
         <div className="mt-4 flex flex-wrap gap-2">
           {busRouteData.route.trips.map((trip, index) => (
             <button
               key={trip._id}
-              onClick={() => setSelectedTripIndex(index)}
+              onClick={() => handleTripChange(index)}
               className={`px-3 py-1 rounded-full text-sm transition-colors ${
                 selectedTripIndex === index
                   ? "bg-white text-indigo-800 font-medium"
@@ -280,7 +307,7 @@ const BusRouteStops = () => {
       </div>
 
       {/* Route Timeline */}
-      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 relative">
         <h2 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
           <span className="bg-indigo-100 p-2 rounded-lg mr-3">
             <FaRoad className="text-indigo-600" />
@@ -293,6 +320,18 @@ const BusRouteStops = () => {
           {/* Vertical line */}
           <div className="absolute left-[21px] top-0 h-full w-0.5 bg-gray-200"></div>
 
+          {/* Animated Bus */}
+          <motion.div
+            className="absolute left-[7px] z-20"
+            initial={{ top: "0%" }}
+            animate={{ top: `${busPosition}%` }}
+            transition={{ duration: 1, ease: "easeInOut" }}
+          >
+            <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg">
+              <FaBus className="text-white text-xs" />
+            </div>
+          </motion.div>
+
           {/* Source */}
           <div className="relative pl-10 pb-4">
             <div className="absolute left-2 top-4 w-7 h-7 rounded-full bg-green-500 flex items-center justify-center z-10 shadow-md">
@@ -302,7 +341,7 @@ const BusRouteStops = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-green-400 mr-3"></div>
-                  <h4 className="font-small text-red-900">
+                  <h4 className="font-medium text-gray-900">
                     {busRouteData.route.source}
                   </h4>
                 </div>
@@ -323,41 +362,77 @@ const BusRouteStops = () => {
           {/* Stops */}
           {selectedTrip.stops.map((stop, index) => (
             <div key={`${stop._id}-${index}`} className="relative pl-10 pb-4">
+              {/* Connection line with bus indicator for current stop */}
+              {index === currentStopIndex && (
+                <motion.div
+                  className="absolute left-2 top-0 h-4 w-0.5 bg-indigo-500 z-0"
+                  initial={{ height: 0 }}
+                  animate={{ height: "1rem" }}
+                  transition={{ duration: 0.5 }}
+                />
+              )}
+
+              {/* Stop marker with different style for current stop */}
               <motion.div
                 animate={{
                   scale: expandedStop === stop._id ? [1, 1.2, 1] : 1,
                   boxShadow:
                     expandedStop === stop._id
                       ? "0 0 0 4px rgba(59, 130, 246, 0.2)"
+                      : index === currentStopIndex
+                      ? "0 0 0 4px rgba(16, 185, 129, 0.4)"
                       : "none",
                 }}
                 transition={{ duration: 0.3 }}
-                className="absolute left-2 top-4 w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center z-10 shadow-md"
+                className={`absolute left-2 top-4 w-7 h-7 rounded-full flex items-center justify-center z-10 shadow-md ${
+                  index === currentStopIndex ? "bg-green-500" : "bg-indigo-500"
+                }`}
               >
-                <FaBus className="text-white text-[8px]" />
+                {index === currentStopIndex ? (
+                  <FaBus className="text-white text-[10px]" />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                )}
               </motion.div>
 
+              {/* Stop Card */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className={`bg-white border border-gray-200 rounded-xl p-4 transition-all duration-200 cursor-pointer ${
+                className={`bg-white border rounded-xl p-4 transition-all duration-200 cursor-pointer ${
                   expandedStop === stop._id
-                    ? "ring-2 ring-indigo-200 shadow-md"
-                    : "shadow-sm hover:shadow-md"
+                    ? "ring-2 ring-indigo-200 shadow-md border-indigo-100"
+                    : index === currentStopIndex
+                    ? "border-green-200 shadow-md"
+                    : "border-gray-200 shadow-sm hover:shadow-md"
                 }`}
                 onClick={() => toggleStopExpand(stop._id)}
               >
+                {/* Stop Info Row */}
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-indigo-400 mr-3"></div>
-                    <h4 className="font-medium text-gray-900">{stop.name}</h4>
+                    <div
+                      className={`w-2 h-2 rounded-full mr-3 ${
+                        index === currentStopIndex
+                          ? "bg-green-400"
+                          : "bg-indigo-400"
+                      }`}
+                    ></div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">{stop.name}</h4>
+                      {index === currentStopIndex && (
+                        <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                          Current Location
+                        </span>
+                      )}
+                    </div>
                   </div>
+
                   <div className="flex items-center text-sm text-gray-600 space-x-4">
                     <div className="flex items-center">
                       <FaClock className="mr-1 text-gray-400" />
-                      <span>
-                        {calculateStopTime(selectedTrip, stop.timingOffset)}
-                      </span>
+                      <span>{stop.timingOffset}</span>
                     </div>
+
                     <div className="flex items-center">
                       <FaRoad className="mr-1 text-gray-400" />
                       <span>
@@ -369,6 +444,7 @@ const BusRouteStops = () => {
                         km
                       </span>
                     </div>
+
                     {expandedStop === stop._id ? (
                       <MdExpandLess className="text-gray-500" />
                     ) : (
@@ -377,6 +453,7 @@ const BusRouteStops = () => {
                   </div>
                 </div>
 
+                {/* Expanded Section */}
                 <AnimatePresence>
                   {expandedStop === stop._id && (
                     <motion.div
@@ -390,11 +467,9 @@ const BusRouteStops = () => {
                         <div className="bg-gray-50 p-3 rounded-lg">
                           <div className="text-gray-500 mb-1 flex items-center">
                             <FaClock className="mr-2" />
-                            Estimated Arrival
+                            Scheduled Arrival
                           </div>
-                          <div className="font-medium">
-                            {calculateStopTime(selectedTrip, stop.timingOffset)}
-                          </div>
+                          <div className="font-medium">{stop.timingOffset}</div>
                         </div>
                       </div>
                     </motion.div>

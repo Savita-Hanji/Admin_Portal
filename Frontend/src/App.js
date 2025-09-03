@@ -35,6 +35,7 @@ import ManageRoutes from "./pages/admin-pages/ManageRoutes.js";
 import ManagePOSMachines from "./pages/admin-pages/ManagePosMachine.js";
 import ManageBusPosMapping from "./pages/admin-pages/ManageBusPosMapping.js";
 import PageNotFound from "./pages/PageNotFound.js";
+import Conductors from "./pages/admin-pages/Conductors.js"
 
 const App = () => {
   const dispatch = useDispatch();
@@ -109,6 +110,14 @@ const App = () => {
               element={
                 <AdminRoute>
                   <ManageBusRouteMapping />
+                </AdminRoute>
+              }
+            />
+            <Route 
+              path="/admin/conductors"
+              element={
+                <AdminRoute>
+                  <Conductors />
                 </AdminRoute>
               }
             />

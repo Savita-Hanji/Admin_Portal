@@ -9,7 +9,7 @@ const AdminRoute = ({ children }) => {
   if (loading) return <SkeletonLoader />;
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
   console.log("in admin route ", user);
   if (user.role !== "ADMIN") {
