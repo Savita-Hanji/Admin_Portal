@@ -63,10 +63,6 @@
 //   console.log(`🚀 Server running on port ${PORT}`);
 // });
 
-
-
-
-
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -93,7 +89,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "https://track-my-bus-dqrc.onrender.com" || "http://localhost:3000",
   optionsSuccessStatus: 200,
   credentials: true,
 };
