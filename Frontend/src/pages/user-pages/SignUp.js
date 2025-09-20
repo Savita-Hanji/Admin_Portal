@@ -59,6 +59,7 @@ const SignUp = () => {
     }
 
     try {
+      console.log("in Sign up Form Data:", form); // Debugging line
       const res = await axiosInstance.post("/auth/register", form);
       console.log(res.data);
       navigate("/home");
