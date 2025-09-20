@@ -116,7 +116,7 @@ export const getUniqueStops = async (req, res) => {
   }
 };
 
-// ✅ Update an existing route by ID
+// ✅ Update an existing route by ID (with stop editing support)
 export const updateRoute = async (req, res) => {
   const { id } = req.params;
   try {
@@ -130,10 +130,11 @@ export const updateRoute = async (req, res) => {
       via,
       distance,
       estimatedDuration,
-      trips,
+      trips, // <-- optional now
       isActive,
     } = req.body;
 
+    // Trim fields
     source = source?.trim();
     destination = destination?.trim();
     via = via?.trim() || "";
@@ -144,44 +145,53 @@ export const updateRoute = async (req, res) => {
         .json({ message: "Source and destination are required" });
     }
 
-    if (!Array.isArray(trips) || trips.length === 0) {
-      return res.status(400).json({ message: "At least one trip is required" });
+    const existingRoute = await Route.findById(id);
+    if (!existingRoute) {
+      return res.status(404).json({ message: "Route not found" });
     }
 
-    for (const trip of trips) {
-      if (!trip.sourceTime || !trip.destinationTime) {
-        return res.status(400).json({
-          message: "Each trip must have sourceTime and destinationTime",
-        });
-      }
-      if (!Array.isArray(trip.stops) || trip.stops.length === 0) {
-        return res
-          .status(400)
-          .json({ message: "Each trip must have at least one stop" });
-      }
-      for (const stop of trip.stops) {
-        if (
-          !stop.name?.trim() ||
-          !stop.timingOffset?.trim() ||
-          !stop.latitude?.trim() ||
-          !stop.longitude?.trim() ||
-          stop.sequence === undefined
-        ) {
-          return res.status(400).json({
-            message:
-              "Each stop must have name, timingOffset, latitude, longitude, and sequence",
-          });
+    // ✅ Update trips & stops only if provided
+    let updatedTrips = existingRoute.trips;
+    if (Array.isArray(trips)) {
+      updatedTrips = trips.map((trip, i) => {
+        if (!trip.sourceTime || !trip.destinationTime) {
+          throw new Error(
+            `Trip ${i + 1} is missing sourceTime/destinationTime`
+          );
         }
-      }
+        if (!Array.isArray(trip.stops) || trip.stops.length === 0) {
+          throw new Error(`Trip ${i + 1} must have at least one stop`);
+        }
+
+        // Validate each stop
+        trip.stops.forEach((stop, s) => {
+          if (
+            !stop.name?.trim() ||
+            !stop.timingOffset?.trim() ||
+            !stop.latitude?.trim() ||
+            !stop.longitude?.trim() ||
+            stop.sequence === undefined
+          ) {
+            throw new Error(
+              `Trip ${i + 1}, Stop ${
+                s + 1
+              }: name, timingOffset, latitude, longitude, and sequence are required`
+            );
+          }
+        });
+
+        return trip;
+      });
     }
 
+    // ✅ Build update object
     const updateData = {
       source,
       destination,
       via,
       distance,
       estimatedDuration,
-      trips,
+      trips: updatedTrips,
       isActive,
     };
 
@@ -189,14 +199,15 @@ export const updateRoute = async (req, res) => {
       new: true,
     });
 
-    if (!updatedRoute) {
-      return res.status(404).json({ message: "Route not found" });
-    }
-
-    res.status(200).json({ message: "✅ Route updated", route: updatedRoute });
+    res.status(200).json({
+      message: "✅ Route updated with stops",
+      route: updatedRoute,
+    });
   } catch (error) {
-    console.error("❌ Error updating route:", error);
-    res.status(500).json({ message: "Failed to update route" });
+    console.error("❌ Error updating route:", error.message);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to update route" });
   }
 };
 

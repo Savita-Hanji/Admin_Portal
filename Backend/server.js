@@ -83,6 +83,8 @@ import busPosMapping from "./routes/busPosMapping.route.js";
 import authRoutes from "./routes/auth.route.js";
 import conductorRoutes from "./routes/conductors.route.js"; // 👈 NEW
 import connectDB from "./utils/connectDB.js";
+import stopPriceRoutes from "./routes/stopPrice.route.js"; // 👈 NEW
+import pass from "./routes/pass.route.js"; // 👈 NEW
 // import gpsRoutes from "./routes/gps.route.js";
 
 dotenv.config();
@@ -109,6 +111,8 @@ app.use("/api/pos-machines", PosMachine);
 app.use("/api/bus-pos-mapping", busPosMapping);
 app.use("/api/auth", authRoutes);
 app.use("/api/conductors", conductorRoutes); // 👈 NEW
+app.use("/api/stop-prices", stopPriceRoutes); // 👈 NEW
+app.use("/api/passes", pass); // 👈 NEW
 // app.use("/api/gps", gpsRoutes);
 
 // 🛰️ Socket.IO Setup

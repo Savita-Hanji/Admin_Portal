@@ -35,7 +35,9 @@ import ManageRoutes from "./pages/admin-pages/ManageRoutes.js";
 import ManagePOSMachines from "./pages/admin-pages/ManagePosMachine.js";
 import ManageBusPosMapping from "./pages/admin-pages/ManageBusPosMapping.js";
 import PageNotFound from "./pages/PageNotFound.js";
-import Conductors from "./pages/admin-pages/Conductors.js"
+import Conductors from "./pages/admin-pages/Conductors.js";
+import ManageStopPrices from "./pages/admin-pages/ManageStopPrices.js";
+import ManagePasses from "./pages/admin-pages/ManagePasses.js";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -113,11 +115,27 @@ const App = () => {
                 </AdminRoute>
               }
             />
-            <Route 
+            <Route
               path="/admin/conductors"
               element={
                 <AdminRoute>
                   <Conductors />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/stop-price"
+              element={
+                <AdminRoute>
+                  <ManageStopPrices />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/passes"
+              element={
+                <AdminRoute>
+                  <ManagePasses />
                 </AdminRoute>
               }
             />

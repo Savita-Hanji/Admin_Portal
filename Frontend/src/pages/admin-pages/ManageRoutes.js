@@ -8,6 +8,8 @@ import {
   FiX,
   FiMapPin,
   FiClock,
+  FiCopy,
+  FiClipboard,
 } from "react-icons/fi";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -20,6 +22,7 @@ const ManageRoutes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [uniqueSources, setUniqueSources] = useState([]);
   const [uniqueDestinations, setUniqueDestinations] = useState([]);
+  const [copiedTrip, setCopiedTrip] = useState(null);
 
   const [form, setForm] = useState({
     source: "",
@@ -108,6 +111,26 @@ const ManageRoutes = () => {
     const updatedTrips = form.trips.filter((_, i) => i !== index);
     setForm({ ...form, trips: updatedTrips });
     setCurrentTripIndex(Math.min(currentTripIndex, updatedTrips.length - 1));
+  };
+
+  const copyTrip = (index) => {
+    const tripToCopy = {
+      ...form.trips[index],
+      stops: [...form.trips[index].stops],
+    };
+    setCopiedTrip(tripToCopy);
+    toast.success("Trip copied successfully");
+  };
+
+  const pasteTrip = (index) => {
+    if (!copiedTrip) {
+      toast.error("No trip copied to paste");
+      return;
+    }
+    const updatedTrips = [...form.trips];
+    updatedTrips[index] = { ...copiedTrip, stops: [...copiedTrip.stops] };
+    setForm({ ...form, trips: updatedTrips });
+    toast.success("Trip pasted successfully");
   };
 
   const addStop = () => {
@@ -202,7 +225,6 @@ const ManageRoutes = () => {
   };
 
   const handleDelete = async (id) => {
-    // if (!window.confirm("Are you sure you want to delete this route?")) return;
     try {
       setLoading(true);
       await axiosInstance.delete(`/routes/${id}`);
@@ -239,6 +261,7 @@ const ManageRoutes = () => {
     });
     setEditingRouteId(null);
     setCurrentTripIndex(0);
+    setCopiedTrip(null);
   };
 
   const filteredRoutes = routes.filter(
@@ -247,8 +270,6 @@ const ManageRoutes = () => {
       route.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (route.via && route.via.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
-  console.log(uniqueSources,"Heyyyyyyyyyy");
 
   return (
     <AdminLayout>
@@ -306,7 +327,6 @@ const ManageRoutes = () => {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Source Field */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Source *
@@ -321,14 +341,7 @@ const ManageRoutes = () => {
                     placeholder="Enter source location"
                     list="sourceSuggestions"
                   />
-                  {/* <datalist id="sourceSuggestions">
-                    {uniqueSources.map((source, index) => (
-                      <option key={index} value={source} />
-                    ))}
-                  </datalist> */}
                 </div>
-
-                {/* Destination Field */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Destination *
@@ -343,13 +356,7 @@ const ManageRoutes = () => {
                     placeholder="Enter destination location"
                     list="destinationSuggestions"
                   />
-                  {/* <datalist id="destinationSuggestions">
-                    {uniqueDestinations.map((dest, index) => (
-                      <option key={index} value={dest} />
-                    ))}
-                  </datalist> */}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Via (Optional)
@@ -363,7 +370,6 @@ const ManageRoutes = () => {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Distance (km)
@@ -377,7 +383,6 @@ const ManageRoutes = () => {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Estimated Duration (min)
@@ -392,8 +397,6 @@ const ManageRoutes = () => {
                   />
                 </div>
               </div>
-
-              {/* Trips/Schedules Section */}
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-semibold text-gray-800">
@@ -408,21 +411,39 @@ const ManageRoutes = () => {
                     Add Trip
                   </button>
                 </div>
-
-                {/* Trip Tabs */}
                 <div className="flex overflow-x-auto mb-4 border-b border-gray-200">
                   {form.trips.map((trip, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => setCurrentTripIndex(index)}
-                      className={`px-4 py-2 text-sm font-medium border-b-2 ${
-                        currentTripIndex === index
-                          ? "border-blue-500 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
-                    >
-                      Trip {index + 1}
+                    <div key={index} className="flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentTripIndex(index)}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                          currentTripIndex === index
+                            ? "border-blue-500 text-blue-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
+                      >
+                        Trip {index + 1}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => copyTrip(index)}
+                        className="text-gray-500 hover:text-gray-700 p-2"
+                        title="Copy Trip"
+                      >
+                        <FiCopy size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => pasteTrip(index)}
+                        className={`text-gray-500 hover:text-gray-700 p-2 ${
+                          !copiedTrip ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        title="Paste Trip"
+                        disabled={!copiedTrip}
+                      >
+                        <FiClipboard size={14} />
+                      </button>
                       {form.trips.length > 1 && (
                         <button
                           type="button"
@@ -430,16 +451,14 @@ const ManageRoutes = () => {
                             e.stopPropagation();
                             removeTrip(index);
                           }}
-                          className="ml-1 text-gray-400 hover:text-red-500"
+                          className="text-gray-400 hover:text-red-500 p-2"
                         >
                           <FiX size={14} />
                         </button>
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
-
-                {/* Current Trip Form */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -454,7 +473,6 @@ const ManageRoutes = () => {
                       required
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Arrival Time *
@@ -469,82 +487,146 @@ const ManageRoutes = () => {
                     />
                   </div>
                 </div>
-
-                {/* Stops for Current Trip */}
-                <div className="pt-4 border-t border-gray-200">
-                  <h4 className="text-md font-semibold mb-3 text-gray-800">
+                <div className="pt-6 border-t border-gray-200">
+                  <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-2 text-blue-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                     Stops for Trip {currentTripIndex + 1}
                   </h4>
-
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Stop Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={newStop.name}
-                        onChange={handleStopChange}
-                        placeholder="Stop name"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Timing Offset *
-                      </label>
-                      <input
-                        type="text"
-                        name="timingOffset"
-                        value={newStop.timingOffset}
-                        onChange={handleStopChange}
-                        placeholder="e.g., +30 mins"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Latitude
-                      </label>
-                      <input
-                        type="text"
-                        name="latitude"
-                        value={newStop.latitude}
-                        onChange={handleStopChange}
-                        placeholder="Latitude"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Longitude
-                      </label>
-                      <input
-                        type="text"
-                        name="longitude"
-                        value={newStop.longitude}
-                        onChange={handleStopChange}
-                        placeholder="Longitude"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div className="flex items-end">
-                      <button
-                        type="button"
-                        onClick={addStop}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm w-full"
+                  <div className="bg-blue-50 p-4 rounded-lg mb-5 border border-blue-100">
+                    <h5 className="text-sm font-medium text-blue-800 mb-2 flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
                       >
-                        Add Stop
-                      </button>
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Add New Stop
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Stop Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={newStop.name}
+                          onChange={handleStopChange}
+                          placeholder="e.g., Central Station"
+                          className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Timing Offset *
+                        </label>
+                        <input
+                          type="text"
+                          name="timingOffset"
+                          value={newStop.timingOffset}
+                          onChange={handleStopChange}
+                          placeholder="e.g., +30 mins"
+                          className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Latitude
+                        </label>
+                        <input
+                          type="text"
+                          name="latitude"
+                          value={newStop.latitude}
+                          onChange={handleStopChange}
+                          placeholder="e.g., 40.7128"
+                          className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Longitude
+                        </label>
+                        <input
+                          type="text"
+                          name="longitude"
+                          value={newStop.longitude}
+                          onChange={handleStopChange}
+                          placeholder="e.g., -74.0060"
+                          className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (
+                              newStop.editingIndex !== undefined &&
+                              newStop.editingIndex !== null
+                            ) {
+                              const updatedTrips = [...form.trips];
+                              updatedTrips[currentTripIndex].stops[
+                                newStop.editingIndex
+                              ] = {
+                                ...newStop,
+                                sequence: newStop.sequence,
+                              };
+                              setForm({ ...form, trips: updatedTrips });
+                              toast.success("Stop updated successfully");
+                            } else {
+                              addStop();
+                            }
+                            setNewStop({
+                              name: "",
+                              timingOffset: "",
+                              latitude: "",
+                              longitude: "",
+                              sequence: 0,
+                              editingIndex: null,
+                            });
+                          }}
+                          disabled={!newStop.name || !newStop.timingOffset}
+                          className={`w-full px-4 py-2.5 rounded-md text-sm font-medium ${
+                            !newStop.name || !newStop.timingOffset
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                          }`}
+                        >
+                          {newStop.editingIndex !== undefined &&
+                          newStop.editingIndex !== null
+                            ? "Update Stop"
+                            : "Add Stop"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="bg-gray-50 p-3 rounded-md border border-gray-200 max-h-40 overflow-y-auto">
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
+                    <div className="flex justify-between items-center mb-3">
+                      <h5 className="text-sm font-medium text-gray-700">
+                        Stops ({form.trips[currentTripIndex].stops.length})
+                      </h5>
+                      {form.trips[currentTripIndex].stops.length > 0 && (
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          Drag to reorder
+                        </span>
+                      )}
+                    </div>
                     {form.trips[currentTripIndex].stops.length > 0 ? (
                       <ul className="divide-y divide-gray-200">
                         {form.trips[currentTripIndex].stops
@@ -552,40 +634,128 @@ const ManageRoutes = () => {
                           .map((stop, index) => (
                             <li
                               key={index}
-                              className="py-2 flex justify-between items-center"
+                              className="py-3 flex justify-between items-center hover:bg-gray-100 px-2 rounded-lg transition-colors"
                             >
-                              <div>
-                                <span className="font-medium">
-                                  {index + 1}. {stop.name}
+                              <div className="flex items-start">
+                                <span className="h-6 w-6 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xs font-medium mt-0.5 mr-3">
+                                  {index + 1}
                                 </span>
-                                <span className="text-gray-500 text-sm ml-2">
-                                  {stop.timingOffset}
-                                </span>
-                                {(stop.latitude || stop.longitude) && (
-                                  <span className="text-gray-400 text-xs block">
-                                    {stop.latitude}, {stop.longitude}
+                                <div>
+                                  <span className="font-medium block">
+                                    {stop.name}
                                   </span>
-                                )}
+                                  <span className="text-gray-600 text-sm flex items-center mt-1">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 mr-1"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                    {stop.timingOffset}
+                                  </span>
+                                  {(stop.latitude || stop.longitude) && (
+                                    <span className="text-gray-500 text-xs flex items-center mt-1">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-3 w-3 mr-1"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                      {stop.latitude}, {stop.longitude}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => removeStop(index)}
-                                className="text-red-500 hover:text-red-700 text-sm"
-                              >
-                                Remove
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewStop({
+                                      ...stop,
+                                      editingIndex: index,
+                                    });
+                                    toast.info("Editing stop...");
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-1"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                  </svg>
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeStop(index)}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md transition-colors"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 mr-1"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  Remove
+                                </button>
+                              </div>
                             </li>
                           ))}
                       </ul>
                     ) : (
-                      <p className="text-gray-400 text-sm italic">
-                        No stops added yet for this trip
-                      </p>
+                      <div className="text-center py-6">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-12 w-12 mx-auto text-gray-300"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        <p className="text-gray-400 text-sm mt-2">
+                          No stops added yet for this trip
+                        </p>
+                        <p className="text-gray-400 text-xs mt-1">
+                          Add your first stop using the form above
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
-
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
@@ -612,8 +782,6 @@ const ManageRoutes = () => {
             </form>
           </div>
         )}
-
-        {/* Routes Table */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <h2 className="font-semibold text-gray-800">All Routes</h2>

@@ -202,11 +202,6 @@
 
 // export default AdminLayout;
 
-
-
-
-
-
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -270,6 +265,18 @@ const navItems = [
     icon: <FiUserCheck className="text-lg" />,
     exact: true,
   },
+  {
+    path: "/admin/stop-price",
+    label: "Stop Prices",
+    icon: <FiMap className="text-lg" />, // you can change to another icon
+    exact: true,
+  },
+  {
+    path: "/admin/passes",
+    label: "Passes",
+    icon: <FiMap className="text-lg" />, // you can change to another icon
+    exact: true,
+  }
 ];
 
 const AdminLayout = ({ children }) => {
