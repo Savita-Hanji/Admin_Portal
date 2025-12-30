@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  registerUser,
-  loginUser,
-  logoutUser,
-  getCurrentUser,
-  firebaseAuth,
+    registerUser,
+    loginUser,
+    logoutUser,
+    getCurrentUser,
+    firebaseAuth,
 } from "../controllers/auth.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
@@ -25,7 +25,6 @@ router.post("/firebase", firebaseAuth);
 // });
 
 export default router;
-
 
 // import express from "express";
 // import {
