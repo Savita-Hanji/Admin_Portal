@@ -89,9 +89,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "https://track-my-bus-dqrc.onrender.com" || "http://localhost:3000",
-  optionsSuccessStatus: 200,
-  credentials: true,
+    origin: "http://localhost:3000",
+    optionsSuccessStatus: 200,
+    credentials: true,
 };
 
 app.use(cookieParser());
@@ -115,22 +115,22 @@ app.use("/api/passes", pass); // 👈 NEW
 const server = http.createServer(app);
 
 const io = new SocketServer(server, {
-  cors: {
-    origin: "*", // You can restrict this to specific domain later
-    methods: ["GET", "POST"],
-  },
+    cors: {
+        origin: "*", // You can restrict this to specific domain later
+        methods: ["GET", "POST"],
+    },
 });
 
 io.on("connection", (socket) => {
-  console.log("📡 Client connected to socket.io");
+    console.log("📡 Client connected to socket.io");
 
-  socket.on("disconnect", () => {
-    console.log("❌ Client disconnected");
-  });
+    socket.on("disconnect", () => {
+        console.log("❌ Client disconnected");
+    });
 });
 
 // 🚀 Start Server
 server.listen(PORT, () => {
-  connectDB();
-  console.log(`🚀 Server running on port ${PORT}`);
+    connectDB();
+    console.log(`🚀 Server running on port ${PORT}`);
 });

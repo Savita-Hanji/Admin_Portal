@@ -160,30 +160,39 @@ const Home = () => {
               <p className="text-xs text-gray-400 mt-1">{currentDate}</p>
             </div>
           </div>
-          <div className="relative">
+          <div className="flex items-center gap-2">
             <button
-              className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
-              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              aria-label={t("home.profile")}
+              onClick={() => navigate("/live-buses")}
+              className="hidden md:inline px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
-              <FaUserCircle className="text-indigo-600 text-xl" />
-              <span className="hidden md:inline text-sm font-medium text-gray-700">
-                {t("home.profile")}
-              </span>
+              {t("home.liveMap") || "Live Map"}
             </button>
-            {showProfileDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md py-1 z-10 border border-gray-100">
-                <button
-                  onClick={() => {
-                    navigate("/profile");
-                    setShowProfileDropdown(false);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                >
-                  {t("home.viewProfile")}
-                </button>
-              </div>
-            )}
+
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                aria-label={t("home.profile")}
+              >
+                <FaUserCircle className="text-indigo-600 text-xl" />
+                <span className="hidden md:inline text-sm font-medium text-gray-700">
+                  {t("home.profile")}
+                </span>
+              </button>
+              {showProfileDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md py-1 z-10 border border-gray-100">
+                  <button
+                    onClick={() => {
+                      navigate("/profile");
+                      setShowProfileDropdown(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  >
+                    {t("home.viewProfile")}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

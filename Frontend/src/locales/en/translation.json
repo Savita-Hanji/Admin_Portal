@@ -13,6 +13,7 @@
     "noAccount": "Don't have an account?",
     "createOne": "Create one",
     "success": "Login successful",
+    "sign_in_with_google":"Continue With Google",
     "errors": {
       "phoneRequired": "Phone number is required",
       "phoneInvalid": "Phone number must be 10 digits",
@@ -29,6 +30,7 @@
     "confirm_password_placeholder": "Confirm Password",
     "password_mismatch": "Passwords do not match",
     "sign_up": "Sign Up",
+    "sign_up_with_google": "Continue With Google",
     "already_have_account": "Already have an account?",
     "success": "Registered Successfully",
     "failure": "Registration failed"
@@ -64,6 +66,7 @@
     "found": "found",
     "via": "Via",
     "na": "N/A",
+    "liveMap": "Live Map",
 
     "noBusesFound": "No buses found",
     "noBusesAvailable": "No buses available from {{source}} to {{destination}}.",

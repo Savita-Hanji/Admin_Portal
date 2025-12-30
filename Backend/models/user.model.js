@@ -13,15 +13,15 @@ const userSchema = new mongoose.Schema(
     },
 
     // Email (for admins or email-based users)
-    // email: {
-    //   type: String,
-    //   unique: true,
-    //   sparse: true, // allows null for phone-based users
-    //   match: [/.+@.+\..+/, "Please enter a valid email address"],
-    //   default:"smtg@gmail.com"
-    // },
+    email: {
+      type: String,
+      unique: true,
+      sparse: true, // allows null for phone-based users
+      match: [/.+@.+\..+/, "Please enter a valid email address"],
+    },
 
-    password: { type: String, required: true },
+    // Password: not required for Firebase-created users; will be present for local phone/password users
+    password: { type: String },
 
     // Role: 'USER' or 'ADMIN'
     role: {

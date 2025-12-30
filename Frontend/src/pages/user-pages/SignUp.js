@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { fetchUser } from "../../slices/authSlice.js";
 import {
   FaUserPlus,
   FaEye,
@@ -8,14 +10,17 @@ import {
   FaLock,
   FaUser,
 } from "react-icons/fa";
+import { auth, googleProvider } from "../../firebase";
+import { signInWithPopup } from "firebase/auth";
+import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import axiosInstance from "../../utils/axiosInstance.js";
 import smtLogo from "../../assets/images/smt-logo.png";
 
 const SignUp = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -212,6 +217,29 @@ const SignUp = () => {
               </>
             )}
           </button>
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const result = await signInWithPopup(auth, googleProvider);
+                  const idToken = await result.user.getIdToken();
+                  await axiosInstance.post("/auth/firebase", { idToken });
+                  dispatch(fetchUser());
+                  // redirect will be handled by fetchUser and app logic or navigate to home
+                  navigate("/home");
+                } catch (err) {
+                  console.error("Google sign-up error", err);
+                  toast.error(t("signup.google_error") || "Google sign-up failed");
+                }
+              }}
+              className="w-full py-3 rounded-lg font-semibold text-gray-700 border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+            >
+              <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="h-5 mr-2" />
+              {t("signup.sign_up_with_google") || "Sign up with Google"}
+            </button>
+          </div>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-500">

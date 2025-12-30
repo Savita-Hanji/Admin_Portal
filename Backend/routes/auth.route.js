@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutUser,
   getCurrentUser,
+  firebaseAuth,
 } from "../controllers/auth.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
@@ -14,6 +15,9 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.get("/me", protect, getCurrentUser);
+
+// Firebase token exchange route (client sends Firebase ID token)
+router.post("/firebase", firebaseAuth);
 
 // Example admin-only route
 // router.get("/admin", protect, adminOnly, (req, res) => {

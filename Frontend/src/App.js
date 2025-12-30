@@ -22,6 +22,7 @@ import SignUp from "./pages/user-pages/SignUp.js";
 import Home from "./pages/user-pages/Home.js";
 import Profile from "./pages/user-pages/Profile.js";
 import BusRouteStops from "./pages/user-pages/BusRouteStops.js";
+import LiveBuses from "./pages/user-pages/LiveBuses.js";
 
 // Admin Pages
 // import AdminLogin from "./admin/AdminLogin";
@@ -91,6 +92,15 @@ const App = () => {
               element={
                 <UserRoute>
                   <BusRouteStops />
+                </UserRoute>
+              }
+            />
+
+            <Route
+              path="/live-buses"
+              element={
+                <UserRoute>
+                  <LiveBuses />
                 </UserRoute>
               }
             />

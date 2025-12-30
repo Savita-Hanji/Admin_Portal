@@ -42,6 +42,8 @@ export const loginUser = async (req, res) => {
   }
 };
 
+import admin from "../utils/firebaseAdmin.js";
+
 export const logoutUser = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
@@ -49,6 +51,67 @@ export const logoutUser = (req, res) => {
     sameSite: "strict",
   });
   res.json({ success: true, message: "Logged out" });
+};
+
+// Handle Firebase ID token sent from client. Verify token with Firebase Admin,
+// then create or find corresponding user in the DB and send a JWT cookie.
+export const firebaseAuth = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    console.log("POST /auth/firebase called; firebaseAdmin apps:", (admin.apps || []).length);
+
+    if (!idToken) {
+      console.warn("firebaseAuth: missing idToken");
+      return res.status(400).json({ message: "idToken is required" });
+    }
+
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (verifyErr) {
+      console.error("firebaseAuth: verifyIdToken error:", verifyErr && verifyErr.message ? verifyErr.message : verifyErr);
+      return res.status(401).json({ message: "Invalid or expired Firebase ID token", error: verifyErr.message });
+    }
+
+    // decoded contains uid, email, phone_number, name, etc.
+    const { email, phone_number } = decoded;
+    console.log("firebaseAuth: decoded token for uid:", decoded.uid, "email:", email, "phone:", phone_number);
+
+    // Try to match user by phone or email
+    let user = null;
+    if (phone_number) {
+      const cleaned = phone_number.replace(/[^0-9]/g, "");
+      user = await User.findOne({ phone: cleaned });
+      if (!user) {
+        const last10 = cleaned.slice(-10);
+        user = await User.findOne({ phone: last10 });
+      }
+    }
+
+    if (!user && email) {
+      user = await User.findOne({ email });
+    }
+
+    // Create user if not exists
+    if (!user) {
+      const nameFromToken = decoded.name || decoded.displayName || (email ? email.split("@")[0] : "Firebase User");
+      user = await User.create({
+        name: nameFromToken,
+        phone: phone_number ? phone_number.replace(/[^0-9]/g, "").slice(-10) : undefined,
+        email: email || undefined,
+        password: undefined, // not used for Firebase users
+      });
+      console.log("firebaseAuth: created new user", user._id);
+    } else {
+      console.log("firebaseAuth: found existing user", user._id);
+    }
+
+    // send server JWT cookie + user
+    sendTokenResponse(res, user);
+  } catch (err) {
+    console.error("Error in firebaseAuth:", err && err.stack ? err.stack : err);
+    res.status(500).json({ message: "Firebase authentication failed", error: err.message || String(err) });
+  }
 };
 
 export const getCurrentUser = async (req, res) => {

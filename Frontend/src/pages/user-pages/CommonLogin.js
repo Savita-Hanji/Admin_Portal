@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../slices/authSlice.js";
+import { loginUser, fetchUser } from "../../slices/authSlice.js";
 import { useTranslation } from "react-i18next";
 import {
   FaEye,
@@ -14,6 +14,9 @@ import {
   FaUserPlus,
 } from "react-icons/fa";
 import smtLogo from "../../assets/images/smt-logo.png";
+import { auth, googleProvider } from "../../firebase";
+import { signInWithPopup } from "firebase/auth";
+import axiosInstance from "../../utils/axiosInstance";
 
 export default function CommonLogin() {
   const dispatch = useDispatch();
@@ -96,6 +99,22 @@ export default function CommonLogin() {
     dispatch(
       loginUser({ phone: form.phone, password: form.password, rememberMe })
     );
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      // Exchange Firebase ID token with our backend to create/find user and set cookie
+      await axiosInstance.post("/auth/firebase", { idToken });
+
+      // Refresh current user in Redux and redirect via existing logic
+      dispatch(fetchUser());
+    } catch (err) {
+      console.error("Google sign-in error", err);
+      toast.error(t("login.google_error") || "Google sign-in failed");
+    }
   };
 
   return (
@@ -240,6 +259,17 @@ export default function CommonLogin() {
               </>
             )}
           </button>
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="w-full py-3 rounded-lg font-semibold text-gray-700 border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+            >
+              <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="h-5 mr-2" />
+              {t("login.sign_in_with_google") || "Sign in with Google"}
+            </button>
+          </div>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-500">
