@@ -81,15 +81,25 @@ import conductorRoutes from "./routes/conductors.route.js"; // 👈 NEW
 import connectDB from "./utils/connectDB.js";
 import stopPriceRoutes from "./routes/stopPrice.route.js"; // 👈 NEW
 import pass from "./routes/pass.route.js"; // 👈 NEW
-// import gpsRoutes from "./routes/gps.route.js";
+import gpsRoutes from "./routes/gps.route.js";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "http://localhost:3001",
+];
+
 const corsOptions = {
-    origin: "https://track-my-bus-dqrc.onrender.com/ || http://localhost:3000",
+    origin: function (origin, callback) {
+        // allow requests with no origin (e.g., curl, Postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error("CORS policy: Origin not allowed"));
+    },
     optionsSuccessStatus: 200,
     credentials: true,
 };
@@ -109,7 +119,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/conductors", conductorRoutes); // 👈 NEW
 app.use("/api/stop-prices", stopPriceRoutes); // 👈 NEW
 app.use("/api/passes", pass); // 👈 NEW
-// app.use("/api/gps", gpsRoutes);
+app.use("/api/gps", gpsRoutes);
 
 // 🛰️ Socket.IO Setup
 const server = http.createServer(app);

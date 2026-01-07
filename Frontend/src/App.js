@@ -27,7 +27,6 @@ import LiveBuses from "./pages/user-pages/LiveBuses.js";
 // Admin Pages
 // import AdminLogin from "./admin/AdminLogin";
 import AdminDashboard from "./pages/admin-pages/AdminDashboard.js";
-import LiveTracking from "./pages/admin-pages/LiveTracking.js";
 import AllUsers from "./pages/admin-pages/AllUsers.js";
 import ManageBusRouteMapping from "./pages/admin-pages/ManageBusRouteMapping.js";
 import "leaflet/dist/leaflet.css";
@@ -39,6 +38,7 @@ import PageNotFound from "./pages/PageNotFound.js";
 import Conductors from "./pages/admin-pages/Conductors.js";
 import ManageStopPrices from "./pages/admin-pages/ManageStopPrices.js";
 import ManagePasses from "./pages/admin-pages/ManagePasses.js";
+import GoogleLiveMap from "./pages/admin-pages/GoogleLiveMap.js";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -153,7 +153,7 @@ const App = () => {
                             path="/admin/live-tracking"
                             element={
                                 <AdminRoute>
-                                    <LiveTracking />
+                                    <GoogleLiveMap />
                                 </AdminRoute>
                             }
                         />

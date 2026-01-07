@@ -4,7 +4,7 @@ import {
   getLatestGpsByDevice,
   getGpsHistoryByDevice,
   getAllGpsData,
-} from "../controllers/gpsController.js";
+} from "../controllers/gps.controller.js";
 
 const router = express.Router();
 
