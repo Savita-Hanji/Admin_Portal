@@ -99,7 +99,7 @@ export default function CommonLogin() {
                 phone: form.phone,
                 password: form.password,
                 rememberMe,
-            })
+            }),
         );
     };
 

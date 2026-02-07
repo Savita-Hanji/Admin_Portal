@@ -159,7 +159,7 @@ const SignUp = () => {
                             type={showConfirmPassword ? "text" : "password"}
                             name="confirm"
                             placeholder={t(
-                                "signup.confirm_password_placeholder"
+                                "signup.confirm_password_placeholder",
                             )}
                             value={form.confirm}
                             onChange={handleChange}

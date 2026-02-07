@@ -21,7 +21,7 @@ export const registerUser = async (req, res) => {
     } catch (err) {
         console.log(
             "Error in registerUser in auth.controller.js\n",
-            err.message
+            err.message,
         );
         res.status(500).json({ message: err.message });
     }
