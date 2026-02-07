@@ -14,9 +14,7 @@ import {
     FaUserPlus,
 } from "react-icons/fa";
 import smtLogo from "../../assets/images/smt-logo.png";
-import { auth, googleProvider } from "../../firebase";
-import { signInWithPopup } from "firebase/auth";
-import axiosInstance from "../../utils/axiosInstance";
+// Firebase removed: Google sign-in disabled
 
 export default function CommonLogin() {
     const dispatch = useDispatch();
@@ -105,21 +103,7 @@ export default function CommonLogin() {
         );
     };
 
-    const handleGoogleSignIn = async () => {
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            const idToken = await result.user.getIdToken();
-
-            // Exchange Firebase ID token with our backend to create/find user and set cookie
-            await axiosInstance.post("/auth/firebase", { idToken });
-
-            // Refresh current user in Redux and redirect via existing logic
-            dispatch(fetchUser());
-        } catch (err) {
-            console.error("Google sign-in error", err);
-            toast.error(t("login.google_error") || "Google sign-in failed");
-        }
-    };
+    // Google sign-in removed
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -277,21 +261,7 @@ export default function CommonLogin() {
                         )}
                     </button>
 
-                    <div className="mt-4">
-                        <button
-                            type="button"
-                            onClick={handleGoogleSignIn}
-                            className="w-full py-3 rounded-lg font-semibold text-gray-700 border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                        >
-                            <img
-                                src="https://www.svgrepo.com/show/355037/google.svg"
-                                alt="Google"
-                                className="h-5 mr-2"
-                            />
-                            {t("login.sign_in_with_google") ||
-                                "Sign in with Google"}
-                        </button>
-                    </div>
+                    {/* Google sign-in removed */}
                 </form>
 
                 <div className="mt-6 text-center text-sm text-gray-500">

@@ -17,7 +17,7 @@ router.post("/logout", logoutUser);
 router.get("/me", protect, getCurrentUser);
 
 // Firebase token exchange route (client sends Firebase ID token)
-router.post("/firebase", firebaseAuth);
+// Firebase auth route removed
 
 // Example admin-only route
 // router.get("/admin", protect, adminOnly, (req, res) => {
