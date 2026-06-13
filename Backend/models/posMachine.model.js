@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const posMachineSchema = new mongoose.Schema(
   {
+    posName: {
+      type: String,
+      required: true,
+      unique: true, // SMT-ETM-012 must be unique
+    },
     deviceId: {
       type: String,
       required: true,
@@ -20,7 +25,7 @@ const posMachineSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // adds createdAt and updatedAt
+    timestamps: true,
   }
 );
 

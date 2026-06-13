@@ -5,6 +5,7 @@ import {
     logoutUser,
     getCurrentUser,
     firebaseAuth,
+    changePassword,
 } from "../controllers/auth.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
@@ -15,7 +16,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.get("/me", protect, getCurrentUser);
-
+router.put("/change-password", changePassword);
 // Firebase token exchange route (client sends Firebase ID token)
 // Firebase auth route removed
 

@@ -7,11 +7,12 @@ import "react-loading-skeleton/dist/skeleton.css";
 import axiosInstance from "../../utils/axiosInstance";
 
 const ManagePOSMachines = () => {
-  const [form, setForm] = useState({
-    deviceId: "",
-    model: "",
-    vendor: "",
-  });
+ const [form, setForm] = useState({
+  name: "",       // This is the number like 001
+  deviceId: "",
+  model: "",
+  vendor: "",
+});
   const [posMachines, setPosMachines] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ const ManagePOSMachines = () => {
   const fetchPOSMachines = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get("/pos-machines");
+      const res = await axiosInstance.get("/api/pos-machines");
       setPosMachines(res.data);
     } catch (err) {
       toast.error(
@@ -47,12 +48,12 @@ const ManagePOSMachines = () => {
       setLoading(true);
       if (editingId) {
         await axiosInstance.put(
-          `/pos-machines/${editingId}`,
+          `/api/pos-machines/${editingId}`,
           form
         );
         toast.success("POS Machine updated successfully");
       } else {
-        await axiosInstance.post("/pos-machines", form);
+        await axiosInstance.post("/api/pos-machines", form);
         toast.success("POS Machine added successfully");
       }
       resetForm();
@@ -66,7 +67,9 @@ const ManagePOSMachines = () => {
   };
 
   const handleEdit = (machine) => {
+    const numericPart = machine.posName ? machine.posName.replace("") : "";
     setForm({
+      name: machine.posName,
       deviceId: machine.deviceId,
       model: machine.model,
       vendor: machine.vendor,
@@ -78,7 +81,7 @@ const ManagePOSMachines = () => {
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      await axiosInstance.delete(`/pos-machines/${id}`);
+      await axiosInstance.delete(`/api/pos-machines/${id}`);
       toast.success("POS Machine deleted successfully");
       fetchPOSMachines();
     } catch (err) {
@@ -92,6 +95,7 @@ const ManagePOSMachines = () => {
 
   const resetForm = () => {
     setForm({
+      name: "",
       deviceId: "",
       model: "",
       vendor: "",
@@ -166,6 +170,22 @@ const ManagePOSMachines = () => {
               onSubmit={handleSubmit}
               className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4"
             >
+              <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    POS Name *
+  </label>
+  <div className="flex">
+      <input
+      type="number"
+      name="name"
+      value={form.name}
+      onChange={handleChange}
+      placeholder="001"
+      className="w-full p-2 border border-gray-300 rounded-r-md"
+      required
+    />
+  </div>
+</div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Device ID *
@@ -256,6 +276,9 @@ const ManagePOSMachines = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Vendor
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+  POS Name
+</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -287,6 +310,9 @@ const ManagePOSMachines = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {pos.vendor}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+  {pos.posName}
+</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
                           <button

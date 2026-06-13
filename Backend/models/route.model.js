@@ -19,12 +19,17 @@ const routeSchema = new mongoose.Schema(
     estimatedDuration: {
       type: Number,
     },
+    routeId: {   // ✅ NEW FIELD
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
 
-    // Multiple trips in a single day
     trips: [
       {
         sourceTime: {
@@ -36,7 +41,6 @@ const routeSchema = new mongoose.Schema(
           required: true,
         },
 
-        // Stops for this specific trip
         stops: [
           {
             name: {
@@ -49,12 +53,17 @@ const routeSchema = new mongoose.Schema(
             },
             latitude: {
               type: String,
-              required: true,
             },
             longitude: {
               type: String,
+            },
+
+            // ✅ NEW FIELD (IMPORTANT)
+            stage: {
+              type: Number,
               required: true,
             },
+
             sequence: {
               type: Number,
               required: true,

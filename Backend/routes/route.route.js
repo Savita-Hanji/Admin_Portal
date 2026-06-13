@@ -1,3 +1,4 @@
+// path = version2Admin/Backend/routes/route.route.js
 import express from "express";
 import {
   getAllRoutes,

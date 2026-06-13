@@ -3,33 +3,38 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, fetchUser } from "../../slices/authSlice.js";
+import { loginUser, clearError } from "../../slices/authSlice.js";
 import { useTranslation } from "react-i18next";
 import {
-    FaEye,
-    FaEyeSlash,
-    FaPhone,
-    FaLock,
-    FaSignInAlt,
-    FaUserPlus,
-} from "react-icons/fa";
+    MdPhone,
+    MdLock,
+    MdVisibility,
+    MdVisibilityOff,
+    MdArrowBack,
+    MdPerson,
+    MdLogin,
+} from "react-icons/md";
 import smtLogo from "../../assets/images/smt-logo.png";
-// Firebase removed: Google sign-in disabled
+
+// Enhanced constants matching the React Native code
+const BUILD_VERSION = "1.0.0";
+const BUILD_DATE = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export default function CommonLogin() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isMarathi = i18n.language === 'mr';
 
     const { user, loading, error } = useSelector((state) => state.auth);
 
     const [form, setForm] = useState({
-        phone: "",
+        username: "",
         password: "",
     });
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({
-        phone: "",
+        username: "",
         password: "",
     });
     const [rememberMe, setRememberMe] = useState(false);
@@ -50,18 +55,16 @@ export default function CommonLogin() {
     useEffect(() => {
         if (error) {
             toast.error(error);
+            dispatch(clearError());
         }
-    }, [error]);
+    }, [error, dispatch]);
 
     const validateForm = () => {
         let valid = true;
-        const newErrors = { phone: "", password: "" };
+        const newErrors = { username: "", password: "" };
 
-        if (!form.phone.trim()) {
-            newErrors.phone = t("login.errors.phoneRequired");
-            valid = false;
-        } else if (!/^\d{10}$/.test(form.phone)) {
-            newErrors.phone = t("login.errors.phoneInvalid");
+        if (!form.username.trim()) {
+            newErrors.username = isMarathi ? "वापरकर्तानाव आवश्यक आहे" : "Username is required";
             valid = false;
         }
 
@@ -96,184 +99,155 @@ export default function CommonLogin() {
         if (!validateForm()) return;
         dispatch(
             loginUser({
-                phone: form.phone,
+                username: form.username,
                 password: form.password,
                 rememberMe,
             }),
         );
     };
 
-    // Google sign-in removed
-
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-            <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl transition-all duration-300 hover:shadow-3xl">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8f9fa] p-4 relative overflow-hidden font-sans">
+            {/* Background decoration matching Language Screen */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#0066CC] opacity-5 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#0066CC] opacity-5 rounded-full blur-3xl"></div>
+
+            <div className="bg-white w-full max-w-[420px] p-8 md:p-10 rounded-[24px] shadow-[0_20px_40px_rgba(0,0,0,0.06)] border border-[#e9ecef] relative z-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+                {/* Header with Back Button */}
+                <div className="mb-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center text-[#0066CC] font-semibold hover:opacity-80 transition-opacity"
+                    >
+                        <MdArrowBack size={24} className="mr-1" />
+                        <span>{isMarathi ? "मागे" : "Back"}</span>
+                    </button>
+                </div>
+
                 <div className="flex flex-col items-center mb-8">
-                    <div className="bg-white p-4 rounded-full mb-4">
+                    <div className="mb-4">
                         <img
                             src={smtLogo}
                             alt="Logo"
-                            height={180}
-                            width={180}
+                            className="w-[150px] h-[150px] object-contain"
                         />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-800">
-                        {t("login.title")}
+                    <h2 className="text-[28px] font-bold text-[#495057] tracking-tight">
+                        {isMarathi ? "प्रशासक लॉगिन" : "Admin Login"}
                     </h2>
-                    <p className="text-gray-500 mt-1">{t("login.subtitle")}</p>
                 </div>
 
-                <form onSubmit={handleLogin} className="space-y-5">
+                <form onSubmit={handleLogin} className="space-y-6">
+                    {/* Username Input */}
                     <div className="space-y-1">
-                        <label
-                            htmlFor="phone"
-                            className="block text-sm font-medium text-gray-700"
-                        >
-                            {t("login.phoneLabel")}
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaPhone className="text-gray-400" />
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#0066CC]">
+                                <MdPerson className="text-[#adb5bd]" size={20} />
                             </div>
                             <input
                                 type="text"
-                                id="phone"
-                                name="phone"
-                                placeholder={t("login.phonePlaceholder")}
-                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
-                                    errors.phone
+                                id="username"
+                                name="username"
+                                placeholder={isMarathi ? "वापरकर्तानाव" : "Username"}
+                                className={`w-full pl-11 pr-4 py-3.5 rounded-xl border bg-[#f8f9fa] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#0066CC]/20 focus:bg-white ${
+                                    errors.username
                                         ? "border-red-500"
-                                        : "border-gray-300"
-                                } focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
-                                value={form.phone}
+                                        : "border-[#e9ecef] focus:border-[#0066CC]"
+                                }`}
+                                value={form.username}
                                 onChange={handleChange}
-                                maxLength="10"
                             />
                         </div>
-                        {errors.phone && (
-                            <p className="text-red-500 text-sm">
-                                {errors.phone}
+                        {errors.username && (
+                            <p className="text-red-500 text-sm ml-1">
+                                {errors.username}
                             </p>
                         )}
                     </div>
 
+                    {/* Password Input */}
                     <div className="space-y-1">
-                        <label
-                            htmlFor="password"
-                            className="block text-sm font-medium text-gray-700"
-                        >
-                            {t("login.passwordLabel")}
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaLock className="text-gray-400" />
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#0066CC]">
+                                <MdLock className="text-[#adb5bd]" size={20} />
                             </div>
                             <input
                                 type={showPassword ? "text" : "password"}
                                 id="password"
                                 name="password"
-                                placeholder={t("login.passwordPlaceholder")}
-                                className={`w-full pl-10 pr-10 py-3 rounded-lg border ${
+                                placeholder={isMarathi ? "पासवर्ड" : "Password"}
+                                className={`w-full pl-11 pr-12 py-3.5 rounded-xl border bg-[#f8f9fa] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#0066CC]/20 focus:bg-white ${
                                     errors.password
                                         ? "border-red-500"
-                                        : "border-gray-300"
-                                } focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
+                                        : "border-[#e9ecef] focus:border-[#0066CC]"
+                                }`}
                                 value={form.password}
                                 onChange={handleChange}
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#adb5bd] hover:text-[#0066CC] transition-colors"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (
-                                    <FaEyeSlash className="text-gray-400 hover:text-gray-600" />
+                                    <MdVisibilityOff size={20} />
                                 ) : (
-                                    <FaEye className="text-gray-400 hover:text-gray-600" />
+                                    <MdVisibility size={20} />
                                 )}
                             </button>
                         </div>
                         {errors.password && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-red-500 text-sm ml-1">
                                 {errors.password}
                             </p>
                         )}
                     </div>
 
-                    <div className="flex justify-between items-center">
-                        <label className="inline-flex items-center">
+                    <div className="flex justify-between items-center text-sm">
+                        <label className="inline-flex items-center cursor-pointer group">
                             <input
                                 type="checkbox"
                                 checked={rememberMe}
                                 onChange={() => setRememberMe(!rememberMe)}
-                                className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out rounded"
+                                className="form-checkbox h-4 w-4 text-[#0066CC] transition duration-150 ease-in-out rounded border-[#e9ecef] focus:ring-[#0066CC]/20"
                             />
-                            <span className="ml-2 text-sm text-gray-600">
+                            <span className="ml-2 text-[#6C757D] group-hover:text-[#495057] transition-colors">
                                 {t("login.rememberMe")}
                             </span>
                         </label>
-                        <Link
-                            to="/forgot-password"
-                            className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
-                        >
-                            {t("login.forgotPassword")}
-                        </Link>
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 flex items-center justify-center ${
+                        className={`w-full py-4 rounded-xl font-bold text-white transition-all duration-300 shadow-[0_4px_12px_rgba(0,102,204,0.2)] active:scale-[0.98] ${
                             loading
-                                ? "bg-indigo-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700"
+                                ? "bg-[#0066CC]/70 cursor-not-allowed"
+                                : "bg-[#0066CC] hover:bg-[#0052A3] hover:shadow-[0_6px_20px_rgba(0,102,204,0.3)]"
                         }`}
                     >
                         {loading ? (
-                            <>
-                                <svg
-                                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
+                            <div className="flex items-center justify-center">
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                                 {t("login.loading")}
-                            </>
+                            </div>
                         ) : (
-                            <>
-                                <FaSignInAlt className="mr-2" />
-                                {t("login.button")}
-                            </>
+                            <div className="flex items-center justify-center">
+                                <MdLogin className="mr-2" />
+                                {isMarathi ? "साइन इन करा" : "Sign In"}
+                            </div>
                         )}
                     </button>
-
-                    {/* Google sign-in removed */}
                 </form>
+            </div>
 
-                <div className="mt-6 text-center text-sm text-gray-500">
-                    {t("login.noAccount")}{" "}
-                    <Link
-                        to="/register"
-                        className="text-indigo-600 hover:text-indigo-800 font-medium underline hover:no-underline"
-                    >
-                        <FaUserPlus className="inline mr-1" />
-                        {t("login.createOne")}
-                    </Link>
-                </div>
+            <div className="mt-8 flex flex-col items-center">
+                <p className="text-[13px] font-medium text-[#6C757D] opacity-80">
+                    App Version {BUILD_VERSION} (Build: {BUILD_DATE})
+                </p>
+                <p className="text-[13px] font-bold text-[#6C757D] mt-1">
+                    Powered by MIT Vishwaprayag University, Solapur
+                </p>
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// path = version2Admin/Frontend/src/pages/admin-pages/ManageRoutes.js
+import React, { useEffect, useState, useRef } from "react";
 import AdminLayout from "./AdminLayout";
 import { toast } from "react-toastify";
 import {
@@ -16,6 +17,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 import axiosInstance from "../../utils/axiosInstance";
 
 const ManageRoutes = () => {
+  const stopNameRef = useRef(null);
+  const [originalStopsBackup, setOriginalStopsBackup] = useState([]);
+  const [insertMessage, setInsertMessage] = useState("");
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -23,8 +27,12 @@ const ManageRoutes = () => {
   const [uniqueSources, setUniqueSources] = useState([]);
   const [uniqueDestinations, setUniqueDestinations] = useState([]);
   const [copiedTrip, setCopiedTrip] = useState(null);
-
+  const [insertIndex, setInsertIndex] = useState(null);
+  const [insertMode, setInsertMode] = useState(null); // "above" or "below"
+  const [editAllMode, setEditAllMode] = useState(false);
+  const [bulkStops, setBulkStops] = useState([]);
   const [form, setForm] = useState({
+    routeId: "",
     source: "",
     destination: "",
     via: "",
@@ -44,6 +52,7 @@ const ManageRoutes = () => {
     timingOffset: "",
     latitude: "",
     longitude: "",
+    stage: "", // ✅ ADD THIS
     sequence: 0,
   });
 
@@ -53,11 +62,19 @@ const ManageRoutes = () => {
   const fetchRoutes = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get("/routes");
-      setRoutes(res.data);
+      const res = await axiosInstance.get("/api/routes");
+      const cleanData = res.data.map((route) => ({
+        ...route,
+        trips: route.trips.map((trip) => ({
+          ...trip,
+          stops: trip.stops.map((stop) => ({ ...stop })),
+        })),
+      }));
+
+      setRoutes(cleanData);
 
       // Fetch unique sources and destinations for suggestions
-      const stopsRes = await axiosInstance.get("/routes");
+      const stopsRes = await axiosInstance.get("/api/routes");
       setUniqueSources(stopsRes.data.sources);
       setUniqueDestinations(stopsRes.data.destinations);
     } catch (err) {
@@ -134,37 +151,83 @@ const ManageRoutes = () => {
   };
 
   const addStop = () => {
-    if (!newStop.name || !newStop.timingOffset) {
-      toast.error("Stop name and timing offset are required");
+    if (!newStop.name || !newStop.timingOffset || !newStop.stage) {
+      toast.error("Stop name, timing offset and stage are required");
       return;
     }
 
     const updatedTrips = [...form.trips];
-    const sequence = updatedTrips[currentTripIndex].stops.length + 1;
-    updatedTrips[currentTripIndex].stops = [
-      ...updatedTrips[currentTripIndex].stops,
-      { ...newStop, sequence },
-    ];
+
+    const currentTrip = updatedTrips[currentTripIndex];
+
+    let stops = [...currentTrip.stops]; // ✅ deep copy
+
+    const newStopData = {
+      name: newStop.name,
+      timingOffset: newStop.timingOffset,
+      latitude: newStop.latitude || "",
+      longitude: newStop.longitude || "",
+      stage: Number(newStop.stage),
+    };
+
+    if (insertIndex !== null) {
+      if (insertMode === "above") {
+        stops.splice(insertIndex, 0, newStopData);
+      } else if (insertMode === "below") {
+        stops.splice(insertIndex + 1, 0, newStopData);
+      }
+    } else {
+      stops.push(newStopData);
+    }
+
+    // Recalculate sequence
+    stops = stops.map((stop, idx) => ({
+      ...stop,
+      sequence: idx + 1,
+    }));
+
+    updatedTrips[currentTripIndex] = {
+      ...currentTrip,
+      stops,
+    };
 
     setForm({ ...form, trips: updatedTrips });
+
+    // Reset
+    setInsertIndex(null);
+    setInsertMode(null);
+
     setNewStop({
       name: "",
       timingOffset: "",
       latitude: "",
       longitude: "",
+      stage: "",
       sequence: 0,
     });
+
+    setInsertMessage("");
   };
 
   const removeStop = (stopIndex) => {
     const updatedTrips = [...form.trips];
-    updatedTrips[currentTripIndex].stops = updatedTrips[
-      currentTripIndex
-    ].stops.filter((_, i) => i !== stopIndex);
-    // Update sequence numbers
-    updatedTrips[currentTripIndex].stops = updatedTrips[
-      currentTripIndex
-    ].stops.map((stop, idx) => ({ ...stop, sequence: idx + 1 }));
+
+    const currentTrip = updatedTrips[currentTripIndex];
+
+    let stops = [...currentTrip.stops]; // ✅ copy
+
+    stops = stops.filter((_, i) => i !== stopIndex);
+
+    stops = stops.map((stop, idx) => ({
+      ...stop,
+      sequence: idx + 1,
+    }));
+
+    updatedTrips[currentTripIndex] = {
+      ...currentTrip,
+      stops,
+    };
+
     setForm({ ...form, trips: updatedTrips });
   };
 
@@ -172,7 +235,7 @@ const ManageRoutes = () => {
     e.preventDefault();
     try {
       setLoading(true);
-
+      console.log("FORM SENDING:", form);
       // Validate at least one stop per trip
       for (const trip of form.trips) {
         if (!trip.sourceTime || !trip.destinationTime) {
@@ -184,10 +247,10 @@ const ManageRoutes = () => {
       }
 
       if (editingRouteId) {
-        await axiosInstance.put(`/routes/${editingRouteId}`, form);
+        await axiosInstance.put(`/api/routes/${editingRouteId}`, form);
         toast.success("Route updated successfully");
       } else {
-        await axiosInstance.post("/routes", form);
+        await axiosInstance.post("/api/routes", form);
         toast.success("Route added successfully");
       }
 
@@ -196,7 +259,7 @@ const ManageRoutes = () => {
       setShowForm(false);
     } catch (err) {
       toast.error(
-        err.message || err.response?.data?.message || "Failed to save route"
+        err.message || err.response?.data?.message || "Failed to save route",
       );
     } finally {
       setLoading(false);
@@ -205,20 +268,30 @@ const ManageRoutes = () => {
 
   const handleEdit = (route) => {
     setEditingRouteId(route._id);
+
+    // ✅ DEEP COPY (VERY IMPORTANT)
+    const deepTrips = JSON.parse(
+      JSON.stringify(
+        route.trips || [
+          {
+            sourceTime: "",
+            destinationTime: "",
+            stops: [],
+          },
+        ],
+      ),
+    );
+
     setForm({
+      routeId: route.routeId || "", // ✅ ADD THIS
       source: route.source,
       destination: route.destination,
       via: route.via || "",
       distance: route.distance || "",
       estimatedDuration: route.estimatedDuration || "",
-      trips: route.trips || [
-        {
-          sourceTime: "",
-          destinationTime: "",
-          stops: [],
-        },
-      ],
+      trips: deepTrips, // ✅ FIXED
     });
+
     setCurrentTripIndex(0);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -227,7 +300,7 @@ const ManageRoutes = () => {
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      await axiosInstance.delete(`/routes/${id}`);
+      await axiosInstance.delete(`/api/routes/${id}`);
       toast.success("Route deleted successfully");
       fetchRoutes();
     } catch (err) {
@@ -239,6 +312,7 @@ const ManageRoutes = () => {
 
   const resetForm = () => {
     setForm({
+      routeId: "",
       source: "",
       destination: "",
       via: "",
@@ -257,6 +331,7 @@ const ManageRoutes = () => {
       timingOffset: "",
       latitude: "",
       longitude: "",
+      stage: "",
       sequence: 0,
     });
     setEditingRouteId(null);
@@ -268,7 +343,7 @@ const ManageRoutes = () => {
     (route) =>
       route.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
       route.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (route.via && route.via.toLowerCase().includes(searchTerm.toLowerCase()))
+      (route.via && route.via.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (
@@ -396,6 +471,20 @@ const ManageRoutes = () => {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Route ID *
+                  </label>
+                  <input
+                    type="text"
+                    name="routeId"
+                    value={form.routeId || ""}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    required
+                    placeholder="Enter route ID"
+                  />
+                </div>
               </div>
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center mb-3">
@@ -503,6 +592,219 @@ const ManageRoutes = () => {
                     </svg>
                     Stops for Trip {currentTripIndex + 1}
                   </h4>
+                  {/* Edit All Stops Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const original = form.trips[currentTripIndex].stops;
+
+                      // ✅ FULLY ISOLATED COPY (NO REFERENCE)
+                      const editable = original.map((s) => ({
+                        name: s.name || "",
+                        timingOffset: s.timingOffset || "",
+                        latitude: s.latitude || "",
+                        longitude: s.longitude || "",
+                        stage: s.stage || "",
+                        sequence: s.sequence || 0,
+                      }));
+
+                      const backup = original.map((s) => ({
+                        name: s.name || "",
+                        timingOffset: s.timingOffset || "",
+                        latitude: s.latitude || "",
+                        longitude: s.longitude || "",
+                        stage: s.stage || "",
+                        sequence: s.sequence || 0,
+                      }));
+
+                      setBulkStops(editable);
+                      setOriginalStopsBackup(backup);
+                      setEditAllMode(true);
+                    }}
+                    className="mb-3 bg-blue-600 hover:bg-blue-800 text-white px-3 py-1 rounded"
+                  >
+                    Edit All Stops
+                  </button>
+
+                  {/* Edit Table */}
+                  {editAllMode && (
+                    <div className="bg-white p-4 rounded-lg mb-4 border border-gray-200 shadow-sm">
+                      <h5 className="text-md font-semibold text-gray-800 mb-3">
+                        Edit All Stops
+                      </h5>
+
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="p-2 border">Seq</th>
+                              <th className="p-2 border">Name</th>
+                              <th className="p-2 border">Time</th>
+                              <th className="p-2 border">Stage</th>
+                              <th className="p-2 border">Lat</th>
+                              <th className="p-2 border">Lng</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {bulkStops.map((stop, index) => (
+                              <tr key={index}>
+                                <td className="p-2 border text-center">
+                                  {index + 1}
+                                </td>
+
+                                {/* NAME */}
+                                <td className="p-2 border">
+                                  <input
+                                    value={stop.name}
+                                    onChange={(e) => {
+                                      setBulkStops((prev) =>
+                                        prev.map((s, i) =>
+                                          i === index
+                                            ? { ...s, name: e.target.value }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    className="w-full p-1 border rounded"
+                                  />
+                                </td>
+
+                                {/* TIME */}
+                                <td className="p-2 border">
+                                  <input
+                                    value={stop.timingOffset}
+                                    onChange={(e) => {
+                                      setBulkStops((prev) =>
+                                        prev.map((s, i) =>
+                                          i === index
+                                            ? {
+                                                ...s,
+                                                timingOffset: e.target.value,
+                                              }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    className="w-full p-1 border rounded"
+                                  />
+                                </td>
+
+                                {/* STAGE */}
+                                <td className="p-2 border">
+                                  <input
+                                    type="number"
+                                    value={stop.stage}
+                                    onChange={(e) => {
+                                      console.log("ON CHANGE TRIGGERED"); // 👈 TEST
+                                      console.log(
+                                        bulkStops[index] ===
+                                          form.trips[currentTripIndex].stops[
+                                            index
+                                          ],
+                                      );
+                                      setBulkStops((prev) =>
+                                        prev.map((s, i) =>
+                                          i === index
+                                            ? { ...s, stage: e.target.value }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    className="w-full p-1 border rounded"
+                                  />
+                                </td>
+
+                                {/* LAT */}
+                                <td className="p-2 border">
+                                  <input
+                                    value={stop.latitude}
+                                    onChange={(e) => {
+                                      setBulkStops((prev) =>
+                                        prev.map((s, i) =>
+                                          i === index
+                                            ? { ...s, latitude: e.target.value }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    className="w-full p-1 border rounded"
+                                  />
+                                </td>
+
+                                {/* LNG */}
+                                <td className="p-2 border">
+                                  <input
+                                    value={stop.longitude}
+                                    onChange={(e) => {
+                                      setBulkStops((prev) =>
+                                        prev.map((s, i) =>
+                                          i === index
+                                            ? {
+                                                ...s,
+                                                longitude: e.target.value,
+                                              }
+                                            : s,
+                                        ),
+                                      );
+                                    }}
+                                    className="w-full p-1 border rounded"
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* BUTTONS */}
+                      <div className="mt-4 flex gap-3">
+                        {/* SAVE */}
+                        <button
+                          onClick={() => {
+                            const updatedTrips = form.trips.map((trip, i) => {
+                              if (i !== currentTripIndex) return trip;
+
+                              return {
+                                ...trip,
+                                stops: bulkStops.map((s, idx) => ({
+                                  name: s.name,
+                                  timingOffset: s.timingOffset,
+                                  latitude: s.latitude,
+                                  longitude: s.longitude,
+                                  stage: Number(s.stage),
+                                  sequence: idx + 1,
+                                })),
+                              };
+                            });
+
+                            setForm((prev) => ({
+                              ...prev,
+                              trips: updatedTrips,
+                            }));
+
+                            setEditAllMode(false);
+                          }}
+                          className="bg-blue-600 text-white px-4 py-2 rounded"
+                        >
+                          Save All Changes
+                        </button>
+
+                        {/* CANCEL */}
+                        <button
+                          onClick={() => {
+                            setBulkStops(
+                              originalStopsBackup.map((s) => ({ ...s })),
+                            );
+                            setEditAllMode(false);
+                          }}
+                          className="bg-gray-300 px-4 py-2 rounded"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <div className="bg-blue-50 p-4 rounded-lg mb-5 border border-blue-100">
                     <h5 className="text-sm font-medium text-blue-800 mb-2 flex items-center">
                       <svg
@@ -519,6 +821,22 @@ const ManageRoutes = () => {
                       </svg>
                       Add New Stop
                     </h5>
+                    {insertMessage && (
+                      <div className="mb-2 text-sm text-green-700 bg-green-100 px-3 py-2 rounded">
+                        {insertMessage}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInsertIndex(null);
+                            setInsertMode(null);
+                            setInsertMessage("");
+                          }}
+                          className="ml-3 text-red-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -527,6 +845,7 @@ const ManageRoutes = () => {
                         <input
                           type="text"
                           name="name"
+                          ref={stopNameRef}
                           value={newStop.name}
                           onChange={handleStopChange}
                           placeholder="e.g., Central Station"
@@ -548,7 +867,20 @@ const ManageRoutes = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Latitude
+                          Stage *
+                        </label>
+                        <input
+                          type="number"
+                          name="stage"
+                          value={newStop.stage}
+                          onChange={handleStopChange}
+                          placeholder="Enter stage (e.g., 4)"
+                          className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Latitude *
                         </label>
                         <input
                           type="text"
@@ -561,7 +893,7 @@ const ManageRoutes = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Longitude
+                          Longitude*
                         </label>
                         <input
                           type="text"
@@ -581,27 +913,42 @@ const ManageRoutes = () => {
                               newStop.editingIndex !== null
                             ) {
                               const updatedTrips = [...form.trips];
+
                               updatedTrips[currentTripIndex].stops[
                                 newStop.editingIndex
                               ] = {
-                                ...newStop,
-                                sequence: newStop.sequence,
+                                name: newStop.name,
+                                timingOffset: newStop.timingOffset,
+                                latitude: newStop.latitude || "",
+                                longitude: newStop.longitude || "",
+                                stage: Number(newStop.stage), // ✅ FIX
+                                sequence: Number(newStop.sequence),
                               };
+
                               setForm({ ...form, trips: updatedTrips });
                               toast.success("Stop updated successfully");
                             } else {
                               addStop();
                             }
+
+                            // ✅ IMPORTANT RESET (stage must be included)
                             setNewStop({
                               name: "",
                               timingOffset: "",
                               latitude: "",
                               longitude: "",
+                              stage: "",
                               sequence: 0,
                               editingIndex: null,
                             });
                           }}
-                          disabled={!newStop.name || !newStop.timingOffset}
+                          disabled={
+                            !newStop.name ||
+                            !newStop.timingOffset ||
+                            !newStop.stage === "" ||
+                            newStop.latitude === "" ||
+                            newStop.longitude === ""
+                          }
                           className={`w-full px-4 py-2.5 rounded-md text-sm font-medium ${
                             !newStop.name || !newStop.timingOffset
                               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -629,7 +976,7 @@ const ManageRoutes = () => {
                     </div>
                     {form.trips[currentTripIndex].stops.length > 0 ? (
                       <ul className="divide-y divide-gray-200">
-                        {form.trips[currentTripIndex].stops
+                        {[...form.trips[currentTripIndex].stops] // ✅ COPY FIRST
                           .sort((a, b) => a.sequence - b.sequence)
                           .map((stop, index) => (
                             <li
@@ -642,7 +989,7 @@ const ManageRoutes = () => {
                                 </span>
                                 <div>
                                   <span className="font-medium block">
-                                    {stop.name}
+                                    {stop.name} (Stage {stop.stage})
                                   </span>
                                   <span className="text-gray-600 text-sm flex items-center mt-1">
                                     <svg
@@ -719,6 +1066,41 @@ const ManageRoutes = () => {
                                   </svg>
                                   Remove
                                 </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setInsertIndex(index);
+                                    setInsertMode("above");
+                                    setInsertMessage(
+                                      `Adding stop ABOVE ${stop.name}`,
+                                    );
+
+                                    setTimeout(() => {
+                                      stopNameRef.current?.focus();
+                                    }, 100);
+                                  }}
+                                  className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded"
+                                >
+                                  + Above
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setInsertIndex(index);
+                                    setInsertMode("below");
+                                    setInsertMessage(
+                                      `Adding stop BELOW ${stop.name}`,
+                                    );
+
+                                    setTimeout(() => {
+                                      stopNameRef.current?.focus();
+                                    }, 100);
+                                  }}
+                                  className="text-purple-600 text-sm font-medium bg-purple-50 px-2 py-1 rounded"
+                                >
+                                  + Below
+                                </button>
                               </div>
                             </li>
                           ))}
@@ -775,8 +1157,8 @@ const ManageRoutes = () => {
                   {loading
                     ? "Processing..."
                     : editingRouteId
-                    ? "Update Route"
-                    : "Add Route"}
+                      ? "Update Route"
+                      : "Add Route"}
                 </button>
               </div>
             </form>
@@ -857,7 +1239,7 @@ const ManageRoutes = () => {
                           <div className="flex flex-wrap gap-1">
                             {route.trips[0].stops
                               .sort((a, b) => a.sequence - b.sequence)
-                              .slice(0, 3)
+                              .slice(0, route.trips[0].stops.length)
                               .map((stop, i) => (
                                 <span
                                   key={i}
@@ -866,11 +1248,11 @@ const ManageRoutes = () => {
                                   {stop.name}
                                 </span>
                               ))}
-                            {route.trips[0].stops.length > 3 && (
+                            {/* { route.trips[0].stops.length > 3 && (
                               <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
                                 +{route.trips[0].stops.length - 3} more
                               </span>
-                            )}
+                            )} */}
                           </div>
                         ) : (
                           <span className="text-gray-400">No stops</span>
