@@ -134,9 +134,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
-  "https://smc-frontend-three.vercel.app",
-  "https://smc-frontend-git-main-rudreshmathapatis-projects.vercel.app",
-  "https://smc-frontend-mim6z9h2z-rudreshmathapatis-projects.vercel.app",
+  "https://admin-portal-6m2n.onrender.com",
   "http://localhost:3000",
 ];
 const corsOptions = {
